@@ -10,7 +10,7 @@
 
     <name>Keel Integration for MySQL</name>
     <description>
-        The Keel Integration for MySQL is a module that provides MySQL integration capabilities for the Keel framework. It allows developers to easily connect and interact with MySQL databases within their Keel-based applications.
+        The Keel Integration for POI
     </description>
 
     <url>https://github.com/sinri/Keel-MySQL</url>
