@@ -8,12 +8,12 @@
     <artifactId>keel-poi</artifactId>
     <version>5.0.0-SNAPSHOT</version>
 
-    <name>Keel Integration for MySQL</name>
+    <name>Keel Integration for POI</name>
     <description>
         The Keel Integration for POI
     </description>
 
-    <url>https://github.com/sinri/Keel-MySQL</url>
+    <url>https://github.com/sinri/keel-poi</url>
 
     <licenses>
         <license>
@@ -23,7 +23,7 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/sinri/Keel-MySQL.git</url>
+        <url>https://github.com/sinri/keel-poi.git</url>
     </scm>
 
     <developers>
