@@ -1,8 +1,9 @@
 package io.github.sinri.keel.integration.poi.csv;
 
-import io.github.sinri.keel.facade.tesuto.unit.KeelJUnit5Test;
+import io.github.sinri.keel.tesuto.KeelJUnit5Test;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -21,6 +22,11 @@ class KeelCsvReaderTest extends KeelJUnit5Test {
 
     public KeelCsvReaderTest(Vertx vertx) {
         super(vertx);
+    }
+
+    @Override
+    protected void test(VertxTestContext testContext) {
+        testContext.completeNow();
     }
 
     @Test

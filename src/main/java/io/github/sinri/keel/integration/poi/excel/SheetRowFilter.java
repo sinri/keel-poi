@@ -12,6 +12,11 @@ import java.util.List;
  * @since 5.0.0
  */
 public interface SheetRowFilter {
+    /**
+     * 创建一个过滤器，用于过滤掉所有单元格都为空的行。
+     *
+     * @return 一个过滤器实例，该过滤器会判断一行是否所有单元格都为空
+     */
     static SheetRowFilter toThrowEmptyRows() {
         return rawRow -> {
             boolean allEmpty = true;
@@ -25,6 +30,12 @@ public interface SheetRowFilter {
         };
     }
 
+    /**
+     * 判断是否应该过滤掉当前行。
+     *
+     * @param rawRow 原始行数据，包含该行所有单元格的内容
+     * @return 如果应该过滤掉此行则返回 true，否则返回 false
+     */
     boolean shouldThrowThisRawRow(@NotNull List<String> rawRow);
 
 

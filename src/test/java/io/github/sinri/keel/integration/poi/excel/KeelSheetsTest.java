@@ -1,10 +1,11 @@
 package io.github.sinri.keel.integration.poi.excel;
 
-import io.github.sinri.keel.core.ValueBox;
-import io.github.sinri.keel.facade.tesuto.unit.KeelJUnit5Test;
+import io.github.sinri.keel.core.utils.value.ValueBox;
+import io.github.sinri.keel.tesuto.KeelJUnit5Test;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.junit.jupiter.api.AfterEach;
@@ -29,6 +30,11 @@ class KeelSheetsTest extends KeelJUnit5Test {
 
     KeelSheetsTest(Vertx vertx) {
         super(vertx);
+    }
+
+    @Override
+    protected void test(VertxTestContext testContext) {
+        testContext.completeNow();
     }
 
     @BeforeEach

@@ -6,7 +6,8 @@
 
     <groupId>io.github.sinri</groupId>
     <artifactId>keel-poi</artifactId>
-    <version>5.0.0-SNAPSHOT</version>
+    <!--    <version>5.0.0-SNAPSHOT</version>-->
+    <version>5.0.0-rc.1</version>
 
     <name>Keel Integration for POI</name>
     <description>
@@ -39,52 +40,16 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <mavenSourcePluginVersion>3.3.1</mavenSourcePluginVersion>
+        <mavenJavadocPluginVersion>3.12.0</mavenJavadocPluginVersion>
+        <mavenCompilerPluginVersion>3.14.1</mavenCompilerPluginVersion>
+        <mavenSurefirePluginVersion>3.5.4</mavenSurefirePluginVersion>
+        <mavenGpgPluginVersion>3.2.8</mavenGpgPluginVersion>
+        <nexusStagingMavenPluginVersion>1.7.0</nexusStagingMavenPluginVersion>
         <vertxVersion>5.0.5</vertxVersion>
         <poiVersion>5.5.0</poiVersion>
         <excelStreamingReader>5.1.2</excelStreamingReader>
     </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>io.github.sinri</groupId>
-            <artifactId>keel-core</artifactId>
-            <version>5.0.0-rc.2</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-junit5</artifactId>
-            <version>${vertxVersion}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi</artifactId>
-            <version>${poiVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>${poiVersion}</version>
-            <!-- its dependency maven:org.apache.commons:commons-lang3:3.16.0 vulnerable, to 3.18.0 -->
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.18.0</version>
-            <!-- to fix vulnerable in org.apache.poi:poi-ooxml 5.4.0 -->
-        </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml-full</artifactId>
-            <version>${poiVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.pjfanning</groupId>
-            <artifactId>excel-streaming-reader</artifactId>
-            <version>${excelStreamingReader}</version>
-        </dependency>
-    </dependencies>
 
     <build>
         <resources>
@@ -101,10 +66,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
+                    <release>17</release>
                     <source>17</source>
                     <target>17</target>
                 </configuration>
-                <version>3.8.1</version>
+                <version>${mavenCompilerPluginVersion}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -118,12 +84,12 @@
                         </goals>
                     </execution>
                 </executions>
-                <version>3.2.1</version>
+                <version>${mavenSourcePluginVersion}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.11.2</version>
+                <version>${mavenJavadocPluginVersion}</version>
                 <configuration>
                     <!-- 配置Javadoc生成参数 -->
                     <encoding>UTF-8</encoding> <!-- 编码格式 -->
@@ -132,6 +98,10 @@
                     <show>protected</show> <!-- 显示公共成员 -->
                     <doctitle>${project.name} ${project.version} Document</doctitle> <!-- 文档标题 -->
                     <windowtitle>${project.name} ${project.version} Document</windowtitle> <!-- 窗口标题 -->
+                    <!-- 可选：解决 JDK 11+ 的 doclint 严格检查 -->
+                    <!--                            <doclint>none</doclint>-->
+                    <!-- 若使用 JPMS，确保模块图等正确生成 -->
+                    <detectOfflineLinks>false</detectOfflineLinks>
                 </configuration>
                 <executions>
                     <execution>
@@ -145,76 +115,33 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>${mavenSurefirePluginVersion}</version>
                 <configuration>
                     <includes>
-                        <include>io/github/sinri/keel/test/unittest/**/*Test.java</include>
+                        <include>io/github/sinri/keel/base/**/*UnitTest.java</include>
                     </includes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>${mavenGpgPluginVersion}</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
 
     <profiles>
         <profile>
-            <id>snapshot</id>
-            <build>
-                <plugins>
-                </plugins>
-            </build>
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>snapshots</id>
-                    <url>https://nexus.leqeegroup.com/repository/snapshots/</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
-        <profile>
-            <id>rc</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>2.2.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.9.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
+            <id>internal</id>
             <distributionManagement>
                 <snapshotRepository>
                     <id>snapshots</id>
@@ -231,40 +158,12 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>2.2.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.13</version>
+                        <version>${nexusStagingMavenPluginVersion}</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>ossrh</serverId>
-                            <!--                            <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>-->
                             <nexusUrl>https://ossrh-staging-api.central.sonatype.com</nexusUrl>
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
                             <stagingProgressTimeoutMinutes>20</stagingProgressTimeoutMinutes>
@@ -284,4 +183,38 @@
             </distributionManagement>
         </profile>
     </profiles>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.sinri</groupId>
+            <artifactId>keel-core</artifactId>
+            <version>5.0.0-rc.2</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.sinri</groupId>
+            <artifactId>keel-test</artifactId>
+            <version>5.0.0-rc.3</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>${poiVersion}</version>
+            <!-- its dependency maven:org.apache.commons:commons-lang3:3.16.0 vulnerable, to 3.18.0 -->
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.18.0</version>
+            <!-- to fix vulnerable in org.apache.poi:poi-ooxml 5.4.0 -->
+        </dependency>
+        <dependency>
+            <groupId>com.github.pjfanning</groupId>
+            <artifactId>excel-streaming-reader</artifactId>
+            <version>${excelStreamingReader}</version>
+        </dependency>
+    </dependencies>
+
 </project>

@@ -1,11 +1,12 @@
 package io.github.sinri.keel.integration.poi.excel;
 
-import io.github.sinri.keel.facade.tesuto.unit.KeelJUnit5Test;
 import io.github.sinri.keel.integration.poi.excel.entity.KeelSheetMatrix;
 import io.github.sinri.keel.integration.poi.excel.entity.KeelSheetMatrixRow;
+import io.github.sinri.keel.tesuto.KeelJUnit5Test;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -38,6 +39,12 @@ class KeelSheetTest extends KeelJUnit5Test {
     KeelSheetTest(Vertx vertx) {
         super(vertx);
     }
+
+    @Override
+    protected void test(VertxTestContext testContext) {
+        testContext.completeNow();
+    }
+
     @BeforeEach
     void setUp() throws IOException {
         testOutputDir = new File(TEST_OUTPUT_DIR);

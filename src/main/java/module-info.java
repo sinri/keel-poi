@@ -1,11 +1,16 @@
 module io.github.sinri.keel.integration.poi {
-    requires com.github.pjfanning.excelstreamingreader;
     requires io.github.sinri.keel.core;
     requires io.vertx.core;
-    requires org.apache.poi.ooxml;
-    requires org.apache.poi.poi;
     requires org.jetbrains.annotations;
     requires java.desktop;
+
+    requires org.apache.poi.poi; // Core POI functionalities (kept as code may directly use ss/usermodel)
+    requires org.apache.poi.ooxml; // OOXML functionality
+    requires org.apache.commons.collections4; // Apache Commons Collections
+    requires org.apache.commons.compress; // Apache Commons Compress for zip handling
+    requires org.apache.commons.codec; // Apache Commons Codec for encoding/decoding
+
+    requires com.github.pjfanning.excelstreamingreader;
 
     exports io.github.sinri.keel.integration.poi.csv;
     exports io.github.sinri.keel.integration.poi.excel;
