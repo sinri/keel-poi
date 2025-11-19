@@ -23,13 +23,16 @@ import java.util.function.Function;
 /**
  * Excel 工作簿管理类，提供对 Excel 工作簿的创建、打开、保存等操作。
  * <p>
- *     该类封装了 Apache POI 的工作簿操作，提供了更简洁的 API。
+ * 该类封装了 Apache POI 的工作簿操作，提供了更简洁的 API。
  *
  * @since 5.0.0
  */
 public class KeelSheets implements Closeable {
     /**
-     * @since 3.1.3
+     * 公式求值器，用于计算 Excel 公式单元格的值。
+     * 该字段在需要公式求值时初始化。
+     *
+     * @since 5.0.0
      */
     private final @Nullable FormulaEvaluator formulaEvaluator;
     protected @NotNull Workbook autoWorkbook;
@@ -40,27 +43,32 @@ public class KeelSheets implements Closeable {
     protected KeelSheetsReaderType sheetsReaderType;
 
     /**
-     * @param workbook The generated POI Workbook Implementation.
-     * @since 3.0.20
+     * 受保护的构造函数，使用指定的工作表读取器类型和工作簿实例创建工作簿实例。
+     *
+     * @param sheetsReaderType 工作表读取器类型
+     * @param workbook         工作簿实例
+     * @since 5.0.0
      */
     protected KeelSheets(@Nullable KeelSheetsReaderType sheetsReaderType, @NotNull Workbook workbook) {
         this(sheetsReaderType, workbook, false);
     }
 
     /**
-     * Create a new Sheets.
+     * 受保护的构造函数，创建一个新的工作簿实例。
+     *
      */
     protected KeelSheets() {
         this(null, null, false);
     }
 
     /**
-     * Open an existed workbook or create. Not use stream-write mode by default.
+     * 受保护的构造函数，使用指定的工作表读取器类型、工作簿实例和公式求值器选项创建工作簿实例。
      *
-     * @param workbook if null, create a new Sheets; otherwise, use it.
-     * @since 3.1.3
+     * @param sheetsReaderType     工作表读取器类型
+     * @param workbook             工作簿实例，如果为 null 则创建新的工作簿
+     * @param withFormulaEvaluator 是否启用公式求值器
      */
-    protected KeelSheets(@Nullable KeelSheetsReaderType sheetsReaderType, @Nullable Workbook workbook, boolean withFormulaEvaluator) {
+    private KeelSheets(@Nullable KeelSheetsReaderType sheetsReaderType, @Nullable Workbook workbook, boolean withFormulaEvaluator) {
         this.sheetsReaderType = sheetsReaderType;
         autoWorkbook = Objects.requireNonNullElseGet(workbook, XSSFWorkbook::new);
         if (withFormulaEvaluator) {
@@ -71,7 +79,12 @@ public class KeelSheets implements Closeable {
     }
 
     /**
-     * @since 4.0.2
+     * 使用指定的打开选项打开 Excel 工作簿，并在使用完成后自动关闭。
+     * 该方法会自动管理工作簿的生命周期，确保在操作完成后关闭工作簿。
+     *
+     * @param sheetsOpenOptions 打开工作簿的选项
+     * @param usage             使用工作簿的函数
+     * @return 表示操作完成的 Future
      */
     public static <T> Future<T> useSheets(@NotNull SheetsOpenOptions sheetsOpenOptions,
                                           @NotNull Function<KeelSheets, Future<T>> usage) {
@@ -103,9 +116,11 @@ public class KeelSheets implements Closeable {
                                      if (useXlsx == null) {
                                          try {
                                              workbook = new XSSFWorkbook(inputStream);
+                                             useXlsx = true;
                                          } catch (IOException e) {
                                              try {
                                                  workbook = new HSSFWorkbook(inputStream);
+                                                 useXlsx = false;
                                              } catch (IOException ex) {
                                                  throw new RuntimeException(ex);
                                              }
@@ -157,7 +172,12 @@ public class KeelSheets implements Closeable {
     }
 
     /**
-     * @since 4.0.2
+     * 使用指定的创建选项创建 Excel 工作簿，并在使用完成后自动关闭。
+     * 该方法会自动管理工作簿的生命周期，确保在操作完成后关闭工作簿。
+     *
+     * @param sheetsCreateOptions 创建工作簿的选项
+     * @param usage               使用工作簿的函数
+     * @return 表示操作完成的 Future
      */
     public static <T> Future<T> useSheets(@NotNull SheetsCreateOptions sheetsCreateOptions,
                                           @NotNull Function<KeelSheets, Future<T>> usage) {
@@ -167,7 +187,11 @@ public class KeelSheets implements Closeable {
                          if (sheetsCreateOptions.isUseXlsx()) {
                              keelSheets = new KeelSheets(null, new XSSFWorkbook(), sheetsCreateOptions.isWithFormulaEvaluator());
                              if (sheetsCreateOptions.isUseStreamWriting()) {
-                                 keelSheets.useStreamWrite();
+                                 if (keelSheets.autoWorkbook instanceof XSSFWorkbook) {
+                                     keelSheets.autoWorkbook = new SXSSFWorkbook((XSSFWorkbook) (keelSheets.autoWorkbook));
+                                 } else {
+                                     throw new IllegalStateException("Now autoWorkbook is not an instance of XSSFWorkbook.");
+                                 }
                              }
                          } else {
                              keelSheets = new KeelSheets(null, new HSSFWorkbook(), sheetsCreateOptions.isWithFormulaEvaluator());
@@ -182,23 +206,21 @@ public class KeelSheets implements Closeable {
     }
 
     /**
-     * @since 4.0.2 became private
+     * 根据工作表名称生成工作表读取器，默认解析公式单元格为值。
+     *
+     * @param sheetName 工作表名称
+     * @return 工作表读取器
      */
-    private KeelSheets useStreamWrite() {
-        if (autoWorkbook instanceof XSSFWorkbook) {
-            autoWorkbook = new SXSSFWorkbook((XSSFWorkbook) autoWorkbook);
-        } else {
-            throw new IllegalStateException("Now autoWorkbook is not an instance of XSSFWorkbook.");
-        }
-        return this;
-    }
-
     public KeelSheet generateReaderForSheet(@NotNull String sheetName) {
         return this.generateReaderForSheet(sheetName, true);
     }
 
     /**
-     * @since 3.1.4
+     * 根据工作表名称生成工作表读取器，可选择是否解析公式单元格为值。
+     *
+     * @param sheetName               工作表名称
+     * @param parseFormulaCellToValue 是否将公式单元格解析为值
+     * @return 工作表读取器
      */
     public KeelSheet generateReaderForSheet(@NotNull String sheetName, boolean parseFormulaCellToValue) {
         var sheet = this.getWorkbook().getSheet(sheetName);
@@ -209,12 +231,22 @@ public class KeelSheets implements Closeable {
         return new KeelSheet(sheetsReaderType, sheet, formulaEvaluatorValueBox);
     }
 
+    /**
+     * 根据工作表索引生成工作表读取器，默认解析公式单元格为值。
+     *
+     * @param sheetIndex 工作表索引
+     * @return 工作表读取器
+     */
     public KeelSheet generateReaderForSheet(int sheetIndex) {
         return this.generateReaderForSheet(sheetIndex, true);
     }
 
     /**
-     * @since 3.1.4
+     * 根据工作表索引生成工作表读取器，可选择是否解析公式单元格为值。
+     *
+     * @param sheetIndex              工作表索引
+     * @param parseFormulaCellToValue 是否将公式单元格解析为值
+     * @return 工作表读取器
      */
     public KeelSheet generateReaderForSheet(int sheetIndex, boolean parseFormulaCellToValue) {
         var sheet = this.getWorkbook().getSheetAt(sheetIndex);
@@ -225,6 +257,13 @@ public class KeelSheets implements Closeable {
         return new KeelSheet(sheetsReaderType, sheet, formulaEvaluatorValueBox);
     }
 
+    /**
+     * 根据工作表名称生成工作表写入器，并可指定工作表位置。
+     *
+     * @param sheetName 工作表名称
+     * @param pos       工作表位置，如果为 null 则使用默认位置
+     * @return 工作表写入器
+     */
     public KeelSheet generateWriterForSheet(@NotNull String sheetName, Integer pos) {
         Sheet sheet = this.getWorkbook().createSheet(sheetName);
         if (pos != null) {
@@ -233,22 +272,40 @@ public class KeelSheets implements Closeable {
         return new KeelSheet(null, sheet, new ValueBox<>(this.formulaEvaluator));
     }
 
+    /**
+     * 根据工作表名称生成工作表写入器。
+     *
+     * @param sheetName 工作表名称
+     * @return 工作表写入器
+     */
     public KeelSheet generateWriterForSheet(@NotNull String sheetName) {
         return generateWriterForSheet(sheetName, null);
     }
 
+    /**
+     * 获取工作簿中的工作表数量。
+     *
+     * @return 工作簿中的工作表数量
+     */
     public int getSheetCount() {
         return autoWorkbook.getNumberOfSheets();
     }
 
     /**
-     * @return Raw Apache POI Workbook instance.
+     * 获取原始的 Apache POI 工作簿实例。
+     *
+     * @return 原始的 Apache POI 工作簿实例
      */
     @NotNull
     public Workbook getWorkbook() {
         return autoWorkbook;
     }
 
+    /**
+     * 将工作簿保存到指定的输出流。
+     *
+     * @param outputStream 输出流
+     */
     public void save(OutputStream outputStream) {
         try {
             autoWorkbook.write(outputStream);
@@ -257,6 +314,11 @@ public class KeelSheets implements Closeable {
         }
     }
 
+    /**
+     * 将工作簿保存到指定的文件。
+     *
+     * @param file 文件
+     */
     public void save(File file) {
         try {
             save(new FileOutputStream(file));
@@ -265,13 +327,19 @@ public class KeelSheets implements Closeable {
         }
     }
 
+    /**
+     * 将工作簿保存到指定的文件名。
+     *
+     * @param fileName 文件名
+     */
     public void save(String fileName) {
         save(new File(fileName));
     }
 
     /**
-     * @param completable the promise to signal when close has completed
-     * @since 4.1.0
+     * 关闭工作簿，释放相关资源。
+     *
+     * @param completable 关闭操作完成时的通知对象
      */
     @Override
     public void close(Completable<Void> completable) {

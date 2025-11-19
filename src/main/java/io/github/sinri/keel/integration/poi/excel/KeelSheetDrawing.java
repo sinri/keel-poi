@@ -28,6 +28,12 @@ class KeelSheetDrawing {
     private final ValueBox<HSSFPatriarch> drawingForXlsValueBox = new ValueBox<>();
 
 
+    /**
+     * 构造函数，使用指定的工作表创建绘制类实例。
+     * 该构造函数会根据工作表的类型（XLSX 或 XLS）初始化相应的绘图对象。
+     *
+     * @param keelSheet 工作表实例
+     */
     public KeelSheetDrawing(@NotNull KeelSheet keelSheet) {
         drawingForXlsxValueBox.setValue(null);
         drawingForXlsValueBox.setValue(null);
@@ -48,6 +54,12 @@ class KeelSheetDrawing {
         }
     }
 
+    /**
+     * 获取工作表中的所有图片列表。
+     * 该方法支持 XLSX 和 XLS 格式的工作表，会返回所有嵌入的图片。
+     *
+     * @return 工作表中的图片列表
+     */
     @NotNull
     public List<KeelPictureInSheet> getPictures() {
         List<KeelPictureInSheet> list = new ArrayList<>();

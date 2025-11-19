@@ -16,21 +16,51 @@ public class KeelSheetMatrixTemplatedRowImpl implements KeelSheetMatrixTemplated
     private final KeelSheetMatrixRowTemplate template;
     private final List<String> rawRow;
 
+    /**
+     * 构造函数，使用指定的模板和原始行数据创建模板化行实现。
+     * 该构造函数为包级访问权限。
+     *
+     * @param template 模板
+     * @param rawRow   原始行数据
+     * @since 5.0.0
+     */
     KeelSheetMatrixTemplatedRowImpl(@NotNull KeelSheetMatrixRowTemplate template, @NotNull List<String> rawRow) {
         this.template = template;
         this.rawRow = rawRow;
     }
 
+    /**
+     * 获取行模板。
+     *
+     * @return 行模板
+     * @since 5.0.0
+     */
     @Override
     public KeelSheetMatrixRowTemplate getTemplate() {
         return template;
     }
 
+    /**
+     * 获取指定索引处的列值。
+     *
+     * @param i 列索引
+     * @return 指定索引处的列值
+     * @since 5.0.0
+     */
     @Override
     public String getColumnValue(int i) {
         return this.rawRow.get(i);
     }
 
+    /**
+     * 获取指定列名的列值。
+     * 如果找不到指定的列名，则抛出运行时异常。
+     *
+     * @param name 列名
+     * @return 指定列名的列值
+     * @throws RuntimeException 如果找不到指定的列名
+     * @since 5.0.0
+     */
     @Override
     public String getColumnValue(String name) {
         Integer columnIndex = getTemplate().getColumnIndex(name);
@@ -38,13 +68,23 @@ public class KeelSheetMatrixTemplatedRowImpl implements KeelSheetMatrixTemplated
     }
 
     /**
-     * @since 3.2.16 Fix bug
+     * 获取原始行数据。
+     *
+     * @return 原始行数据列表
+     * @since 5.0.0
      */
     @Override
     public List<String> getRawRow() {
         return rawRow;
     }
 
+    /**
+     * 将行数据转换为 JSON 对象。
+     * 该方法将使用模板中的列名作为键，行中的对应值作为值创建 JSON 对象。
+     *
+     * @return 包含行数据的 JSON 对象
+     * @since 5.0.0
+     */
     @Override
     public JsonObject toJsonObject() {
         var x = new JsonObject();

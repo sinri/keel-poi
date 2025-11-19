@@ -11,6 +11,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -451,7 +452,7 @@ class KeelSheetTest extends KeelJUnit5Test {
         // 创建一个简单的行过滤器，过滤掉空行
         SheetRowFilter filter = new SheetRowFilter() {
             @Override
-            public boolean shouldThrowThisRawRow(List<String> rawRow) {
+            public boolean shouldThrowThisRawRow(@NotNull List<String> rawRow) {
                 return rawRow.stream().allMatch(String::isEmpty);
             }
         };

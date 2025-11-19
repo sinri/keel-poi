@@ -30,13 +30,10 @@ public class SheetsOpenOptions {
      * excel-streaming-reader uses some Apache POI code under the hood. That code uses memory and(or) temp files to
      * store temporary data while it processes the xlsx. With very large files, you will probably want to favour using
      * temp files.
-     * </p>
      * <p>
      * With StreamingReader.builder(), do not set setAvoidTempFiles(true). You should also consider, tuning POI settings
      * too.
-     * </p>
      *
-     * @since 3.2.11
      */
     public static void declareReadingVeryLargeExcelFiles() {
         org.apache.poi.openxml4j.util.ZipInputStreamZipEntrySource.setThresholdBytesForTempFiles(16384); //16KB
@@ -121,8 +118,9 @@ public class SheetsOpenOptions {
     }
 
     /**
-     * @return a certain type of EXCEL format, or null for unknown.
-     * @since 4.0.2
+     * 检查是否使用 XLSX 格式。
+     *
+     * @return XLSX 格式的使用状态，或 null 表示未知
      */
     @Nullable
     public Boolean isUseXlsx() {
@@ -130,7 +128,10 @@ public class SheetsOpenOptions {
     }
 
     /**
-     * @since 4.0.2
+     * 设置是否使用 XLSX 格式。
+     *
+     * @param useXlsx 要设置的 XLSX 格式使用状态
+     * @return 当前选项实例，支持链式调用
      */
     public SheetsOpenOptions setUseXlsx(@NotNull Boolean useXlsx) {
         this.useXlsx = useXlsx;

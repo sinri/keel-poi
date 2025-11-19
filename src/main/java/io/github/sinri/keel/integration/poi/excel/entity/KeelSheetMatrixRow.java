@@ -15,29 +15,58 @@ import java.util.List;
 public class KeelSheetMatrixRow {
     private final List<String> rawRow;
 
+    /**
+     * 构造函数，使用指定的原始行数据创建表格矩阵行实例。
+     *
+     * @param rawRow 原始行数据列表
+     * @since 5.0.0
+     */
     public KeelSheetMatrixRow(List<String> rawRow) {
         this.rawRow = rawRow;
     }
 
+    /**
+     * 读取指定索引处的单元格值。
+     *
+     * @param i 单元格索引
+     * @return 指定索引处的单元格值
+     * @since 5.0.0
+     */
     @NotNull
     public String readValue(int i) {
         return rawRow.get(i);
     }
 
     /**
-     * @since 3.1.1
+     * 读取指定索引处的单元格值并转换为 BigDecimal。
+     *
+     * @param i 单元格索引
+     * @return 转换后的 BigDecimal 值
+     * @since 5.0.0
      */
     public BigDecimal readValueToBigDecimal(int i) {
         return new BigDecimal(readValue(i));
     }
 
     /**
-     * @since 3.1.1
+     * 读取指定索引处的单元格值并转换为 BigDecimal，同时去除尾随零。
+     *
+     * @param i 单元格索引
+     * @return 转换后的 BigDecimal 值，已去除尾随零
+     * @since 5.0.0
      */
     public BigDecimal readValueToBigDecimalStrippedTrailingZeros(int i) {
         return new BigDecimal(readValue(i)).stripTrailingZeros();
     }
 
+    /**
+     * 读取指定索引处的单元格值并转换为整数。
+     * 如果转换失败或值超出整数范围，则返回 null。
+     *
+     * @param i 单元格索引
+     * @return 转换后的整数值，如果转换失败则返回 null
+     * @since 5.0.0
+     */
     @Nullable
     public Integer readValueToInteger(int i) {
         try {
@@ -49,6 +78,14 @@ public class KeelSheetMatrixRow {
 //        return (int) v;
     }
 
+    /**
+     * 读取指定索引处的单元格值并转换为长整数。
+     * 如果转换失败或值超出长整数范围，则返回 null。
+     *
+     * @param i 单元格索引
+     * @return 转换后的长整数值，如果转换失败则返回 null
+     * @since 5.0.0
+     */
     @Nullable
     public Long readValueToLong(int i) {
         try {
@@ -60,6 +97,13 @@ public class KeelSheetMatrixRow {
 //        return (long) v;
     }
 
+    /**
+     * 读取指定索引处的单元格值并转换为双精度浮点数。
+     *
+     * @param i 单元格索引
+     * @return 转换后的双精度浮点数值
+     * @since 5.0.0
+     */
     public double readValueToDouble(int i) {
         return readValueToBigDecimal(i).doubleValue();
 //        return Double.parseDouble(readValue(i));

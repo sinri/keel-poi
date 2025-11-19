@@ -18,6 +18,13 @@ public class KeelSheetMatrixRowTemplateImpl implements KeelSheetMatrixRowTemplat
     private final List<String> headerRow;
     private final Map<String, Integer> headerMap;
 
+    /**
+     * 构造函数，使用指定的表头行数据创建行模板实现。
+     * 该构造函数为包级访问权限。
+     *
+     * @param headerRow 表头行数据列表
+     * @since 5.0.0
+     */
     KeelSheetMatrixRowTemplateImpl(@NotNull List<String> headerRow) {
         this.headerRow = headerRow;
         this.headerMap = new LinkedHashMap<>();
@@ -26,18 +33,38 @@ public class KeelSheetMatrixRowTemplateImpl implements KeelSheetMatrixRowTemplat
         }
     }
 
+    /**
+     * 获取指定索引处的列名。
+     *
+     * @param i 列索引
+     * @return 指定索引处的列名
+     * @since 5.0.0
+     */
     @NotNull
     @Override
     public String getColumnName(int i) {
         return this.headerRow.get(i);
     }
 
+    /**
+     * 获取指定列名的索引。
+     *
+     * @param name 列名
+     * @return 列索引，如果未找到则返回 null
+     * @since 5.0.0
+     */
     @Nullable
     @Override
     public Integer getColumnIndex(String name) {
         return this.headerMap.get(name);
     }
 
+    /**
+     * 获取所有列名列表。
+     *
+     * @return 列名列表
+     * @since 5.0.0
+     */
     @NotNull
     @Override
     public List<String> getColumnNames() {

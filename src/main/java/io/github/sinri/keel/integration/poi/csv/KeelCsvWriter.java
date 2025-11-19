@@ -36,7 +36,11 @@ public class KeelCsvWriter implements Closeable {
     }
 
     /**
-     * @since 4.1.1
+     * 构造函数，使用指定的输出流、分隔符和字符集创建 CSV 写入器。
+     *
+     * @param outputStream 用于写入 CSV 数据的输出流
+     * @param separator    CSV 文件中使用的分隔符
+     * @param charset      CSV 文件的字符集
      */
     public KeelCsvWriter(@NotNull OutputStream outputStream, @NotNull String separator, @NotNull Charset charset) {
         this.outputStream = outputStream;
@@ -46,11 +50,14 @@ public class KeelCsvWriter implements Closeable {
     }
 
     /**
-     * @param outputStream the output stream
-     * @param separator    the separator
-     * @param writeCsvFunc the asynchronous function to write csv with a generated {@link KeelCsvWriter} instance, which
-     *                     is ensured to be closed automatically in the ending.
-     * @since 4.1.1
+     * 使用指定的输出流、分隔符和字符集写入 CSV 数据，并通过提供的函数处理写入操作。
+     * 该方法会自动管理 CSV 写入器的生命周期，确保在操作完成后关闭写入器。
+     *
+     * @param outputStream 用于写入 CSV 数据的输出流
+     * @param separator    CSV 文件中使用的分隔符
+     * @param charset      CSV 文件的字符集
+     * @param writeCsvFunc 用于写入 CSV 数据的函数
+     * @return 表示操作完成的 Future
      */
     public static Future<Void> write(
             @NotNull OutputStream outputStream,
@@ -86,9 +93,12 @@ public class KeelCsvWriter implements Closeable {
     }
 
     /**
-     * Run {@link KeelCsvWriter#write(OutputStream, String, Charset, Function)} with separator {@code ","}.
+     * 使用默认分隔符（逗号）和字符集写入 CSV 数据，并通过提供的函数处理写入操作。
+     * 该方法会自动管理 CSV 写入器的生命周期，确保在操作完成后关闭写入器。
      *
-     * @since 4.1.1
+     * @param outputStream 用于写入 CSV 数据的输出流
+     * @param writeCsvFunc 用于写入 CSV 数据的函数
+     * @return 表示操作完成的 Future
      */
     public static Future<Void> write(
             @NotNull OutputStream outputStream,
@@ -98,11 +108,12 @@ public class KeelCsvWriter implements Closeable {
     }
 
     /**
-     * Write a quoted string and a separator to the output stream as a csv cell.
-     * <p> This method would write a comma as suffix, so the number of columns would be one more than the actual size.
-     * If you care about this, avoid use this method and use {@link KeelCsvWriter#blockWriteRow(List)} instead.
+     * 将带引号的字符串和分隔符写入输出流作为 CSV 单元格。
+     * <p> 该方法会在单元格后写入分隔符，因此列数会比实际大小多一列。
+     * 如果您关心这一点，请避免使用此方法，而使用 {@link KeelCsvWriter#blockWriteRow(List)}。
      *
-     * @since 4.1.1
+     * @param cellValue 要写入的单元格值
+     * @throws IOException 当写入过程中发生 IO 异常时抛出
      */
     public void writeCell(@NotNull String cellValue) throws IOException {
         synchronized (atLineBeginningRef) {
@@ -112,11 +123,11 @@ public class KeelCsvWriter implements Closeable {
     }
 
     /**
-     * Write a new line to the output stream.
+     * 将新行写入输出流。
      * <p>
-     * It is not recommended to use this method along with {@link KeelCsvWriter#blockWriteRow(List)}.
+     * 不建议将此方法与 {@link KeelCsvWriter#blockWriteRow(List)} 一起使用。
      *
-     * @since 4.1.1
+     * @throws IOException 当写入过程中发生 IO 异常时抛出
      */
     public void writeRowEnding() throws IOException {
         synchronized (atLineBeginningRef) {
@@ -130,9 +141,12 @@ public class KeelCsvWriter implements Closeable {
     }
 
     /**
-     * Write a new csv row to the output stream.
+     * 将新的 CSV 行写入输出流。
      * <p>
-     * If an incomplete row is already written, a LINE ENDING would be added first to enforce a new row output.
+     * 如果已经写入了不完整的行，则会首先添加行结束符以确保输出新行。
+     *
+     * @param list 要写入的行数据列表
+     * @throws IOException 当写入过程中发生 IO 异常时抛出
      */
     public void blockWriteRow(@NotNull List<String> list) throws IOException {
         synchronized (atLineBeginningRef) {
@@ -158,6 +172,11 @@ public class KeelCsvWriter implements Closeable {
         }
     }
 
+    /**
+     * 关闭 CSV 写入器，释放相关资源。
+     *
+     * @throws IOException 当关闭过程中发生 IO 异常时抛出
+     */
     @Override
     public void close() throws IOException {
         this.outputStream.close();

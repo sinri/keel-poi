@@ -25,7 +25,10 @@ public class KeelCsvReader implements Closeable {
     private final String separator;
 
     /**
-     * @since 4.1.1
+     * 构造函数，使用指定的 BufferedReader 和分隔符创建 CSV 读取器。
+     *
+     * @param br        用于读取 CSV 数据的 BufferedReader
+     * @param separator CSV 文件中使用的分隔符
      */
     public KeelCsvReader(@NotNull BufferedReader br, @NotNull String separator) {
         this.br = br;
@@ -37,7 +40,11 @@ public class KeelCsvReader implements Closeable {
     }
 
     /**
-     * @since 4.1.1
+     * 构造函数，使用指定的输入流、字符集和分隔符创建 CSV 读取器。
+     *
+     * @param inputStream 用于读取 CSV 数据的输入流
+     * @param charset     CSV 文件的字符集
+     * @param separator   CSV 文件中使用的分隔符
      */
     public KeelCsvReader(@NotNull InputStream inputStream, @NotNull Charset charset, @NotNull String separator) {
         this(new BufferedReader(new InputStreamReader(inputStream, charset)), separator);
@@ -48,12 +55,14 @@ public class KeelCsvReader implements Closeable {
     }
 
     /**
-     * @param inputStream the input stream for csv
-     * @param charset     the charset used by the csv
-     * @param separator   the separator used by the csv
-     * @param readFunc    a function to read the csv and process the data with a generated {@link KeelCsvReader}
-     *                    instance.
-     * @since 4.1.1
+     * 使用指定的输入流、字符集和分隔符读取 CSV 数据，并通过提供的函数处理数据。
+     * 该方法会自动管理 CSV 读取器的生命周期，确保在操作完成后关闭读取器。
+     *
+     * @param inputStream 用于读取 CSV 数据的输入流
+     * @param charset     CSV 文件的字符集
+     * @param separator   CSV 文件中使用的分隔符
+     * @param readFunc    用于读取和处理 CSV 数据的函数
+     * @return 表示操作完成的 Future
      */
     public static Future<Void> read(
             @NotNull InputStream inputStream, @NotNull Charset charset, @NotNull String separator,
@@ -88,8 +97,10 @@ public class KeelCsvReader implements Closeable {
 
 
     /**
-     * @return the next row parsed from csv source, or null if no any more rows there.
-     * @throws IOException if any IO exceptions occur about the csv source
+     * 从 CSV 源中读取并解析下一行数据。
+     *
+     * @return 解析后的 CSV 行对象，如果没有更多行则返回 null
+     * @throws IOException 当 CSV 源发生 IO 异常时抛出
      */
     @Nullable
     public CsvRow next() throws IOException {
@@ -162,6 +173,11 @@ public class KeelCsvReader implements Closeable {
         }
     }
 
+    /**
+     * 关闭 CSV 读取器，释放相关资源。
+     *
+     * @throws IOException 当关闭过程中发生 IO 异常时抛出
+     */
     @Override
     public void close() throws IOException {
         if (br != null) br.close();
