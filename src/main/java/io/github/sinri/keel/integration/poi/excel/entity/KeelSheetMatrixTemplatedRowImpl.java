@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @since 3.0.13
- * @since 3.0.18 Finished Technical Preview.
+ * Excel 表格模板化行实现类，实现模板化行接口。
+ * 该类提供了基于模板结构访问表格行数据的具体实现。
+ *
+ * @since 5.0.0
  */
 public class KeelSheetMatrixTemplatedRowImpl implements KeelSheetMatrixTemplatedRow {
     private final KeelSheetMatrixRowTemplate template;

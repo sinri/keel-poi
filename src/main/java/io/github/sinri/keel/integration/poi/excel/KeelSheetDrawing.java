@@ -14,6 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Excel 工作表绘制类，用于处理 Excel 工作表中的图形元素。
+ * <p>
+ * 该类封装了对工作表中图片等绘制元素的访问。
+ *
+ * @since 5.0.0
+ */
 class KeelSheetDrawing {
     @NotNull
     private final ValueBox<XSSFDrawing> drawingForXlsxValueBox = new ValueBox<>();

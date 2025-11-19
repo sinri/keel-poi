@@ -8,6 +8,13 @@ import org.apache.poi.xssf.usermodel.XSSFPictureData;
 import org.jetbrains.annotations.NotNull;
 
 
+/**
+ * Excel 工作表中的图片类，表示在 Excel 工作表中嵌入的图片。
+ * <p>
+ *     该类封装了图片的位置、尺寸、数据等信息。
+ *
+ * @since 5.0.0
+ */
 public class KeelPictureInSheet {
     private final int atRow;
     private final int atCol;

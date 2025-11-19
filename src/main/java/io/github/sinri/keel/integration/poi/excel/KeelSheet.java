@@ -18,6 +18,13 @@ import java.util.function.Function;
 
 import static io.github.sinri.keel.base.KeelInstance.Keel;
 
+/**
+ * Excel 工作表操作类，提供对 Excel 工作表的读写操作。
+ * <p>
+ *     该类封装了 Apache POI 的工作表操作，提供了更简洁的 API。
+ *
+ * @since 5.0.0
+ */
 public class KeelSheet {
     private final Sheet sheet;
     /**

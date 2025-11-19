@@ -8,10 +8,11 @@ import org.jetbrains.annotations.Nullable;
 import java.math.BigDecimal;
 
 /**
- * As of 4.1.1, number parsing is executed lazily when requested, not
- * precomputed.
+ * CSV 单元格类，表示 CSV 文件中的一个单元格。
+ * <p>
+ * 数字解析在请求时才执行，而不是预先计算。
  *
- * @since 3.1.1
+ * @since 5.0.0
  */
 public class CsvCell {
     private final @Nullable String string;
@@ -20,7 +21,7 @@ public class CsvCell {
     /**
      * As of 4.1.1, do not attempt to parse numbers in the constructor.
      * <p>
-     * 
+     *
      * @param s the CSV cell value
      */
     public CsvCell(@Nullable String s) {
@@ -39,7 +40,7 @@ public class CsvCell {
      * Finally, return true if the value has been parsed to a number, otherwise
      * false.
      * <p>
-     * 
+     *
      * @return whether this cell value can be parsed to a number
      */
     public boolean isNumber() {
@@ -64,7 +65,7 @@ public class CsvCell {
 
     /**
      * <p>
-     * 
+     *
      * @return whether this cell is non-null and empty
      */
     public boolean isEmpty() {
@@ -73,7 +74,7 @@ public class CsvCell {
 
     /**
      * <p>
-     * 
+     *
      * @return whether this cell is null
      */
     public boolean isNull() {
@@ -83,7 +84,7 @@ public class CsvCell {
     /**
      * As of 4.1.1, number parsing is executed lazily when called, not precomputed.
      * <p>
-     * 
+     *
      * @return the parsed number of this cell value, or null when this cell value is
      *         null
      * @throws NumberFormatException when the cell value cannot be parsed to a
@@ -104,7 +105,7 @@ public class CsvCell {
     /**
      * Get the numeric value of this cell, or the default value if the cell value is
      * not a number.
-     * 
+     *
      * @param defaultValue the default value to return if the cell value is not a
      *                     number
      * @return the parsed number of this cell value, or the default value if the
@@ -114,7 +115,7 @@ public class CsvCell {
     @NotNull
     public BigDecimal getNumberOrElse(@NotNull BigDecimal defaultValue) {
         try {
-            
+
             var x = getNumber();
             if (x == null)
                 return defaultValue;
@@ -123,10 +124,11 @@ public class CsvCell {
             return defaultValue;
         }
     }
+
     /**
      * Get the numeric value of this cell, or the default value if the cell value is
      * not a number.
-     * 
+     *
      * @param defaultValue the default value to return if the cell value is not a
      *                     number
      * @return the parsed number of this cell value, or the default value if the
@@ -136,10 +138,11 @@ public class CsvCell {
     public BigDecimal getNumberOrElse(int defaultValue) {
         return getNumberOrElse(BigDecimal.valueOf(defaultValue));
     }
+
     /**
      * Get the numeric value of this cell, or the default value if the cell value is
      * not a number.
-     * 
+     *
      * @param defaultValue the default value to return if the cell value is not a
      *                     number
      * @return the parsed number of this cell value, or the default value if the
@@ -149,10 +152,11 @@ public class CsvCell {
     public BigDecimal getNumberOrElse(long defaultValue) {
         return getNumberOrElse(BigDecimal.valueOf(defaultValue));
     }
+
     /**
      * Get the numeric value of this cell, or the default value if the cell value is
      * not a number.
-     * 
+     *
      * @param defaultValue the default value to return if the cell value is not a
      *                     number
      * @return the parsed number of this cell value, or the default value if the
@@ -162,10 +166,11 @@ public class CsvCell {
     public BigDecimal getNumberOrElse(double defaultValue) {
         return getNumberOrElse(BigDecimal.valueOf(defaultValue));
     }
+
     /**
      * Get the numeric value of this cell, or the default value if the cell value is
      * not a number.
-     * 
+     *
      * @param defaultValue the default value to return if the cell value is not a
      *                     number
      * @return the parsed number of this cell value, or the default value if the
@@ -178,7 +183,7 @@ public class CsvCell {
 
     /**
      * Get the string value of this cell, or null if this cell is null.
-     * 
+     *
      * @return the string value of this cell, or null if this cell is null
      */
     @Nullable

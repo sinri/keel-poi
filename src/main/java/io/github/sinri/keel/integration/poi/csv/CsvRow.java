@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @since 3.1.1 Technical Preview
+ * CSV 行类，表示 CSV 文件中的一行数据。
+ *
+ * @since 5.0.0
  */
 public class CsvRow {
     private final List<CsvCell> cells = new ArrayList<>();

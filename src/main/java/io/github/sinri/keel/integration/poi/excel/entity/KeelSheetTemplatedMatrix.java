@@ -5,8 +5,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 /**
- * @since 3.0.13
- * @since 3.0.18 Finished Technical Preview.
+ * Excel 表格模板化矩阵接口，表示带有模板结构的表格矩阵。
+ * 该接口提供了基于模板访问表格矩阵数据的方法。
+ *
+ * @since 5.0.0
  */
 public interface KeelSheetTemplatedMatrix {
     static KeelSheetTemplatedMatrix create(@NotNull KeelSheetMatrixRowTemplate template) {

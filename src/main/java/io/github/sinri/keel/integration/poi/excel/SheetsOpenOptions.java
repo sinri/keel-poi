@@ -10,7 +10,9 @@ import java.io.InputStream;
 import java.util.Objects;
 
 /**
- * @since 3.2.11
+ * Excel 工作簿打开选项类，用于配置打开 Excel 工作簿时的参数。
+ *
+ * @since 5.0.0
  */
 public class SheetsOpenOptions {
     private boolean withFormulaEvaluator = false;

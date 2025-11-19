@@ -8,10 +8,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
- * Excel → Matrix of Cells' String values → Customized Row Readers.
+ * Excel 表格矩阵类，将 Excel 表格数据转换为单元格字符串值的矩阵，支持自定义行读取器。
+ * 该类用于表示 Excel 表格中的数据结构，包含表头行和数据行。
  *
- * @since 3.0.13
- * @since 3.0.18 Finished Technical Preview.
+ * @since 5.0.0
  */
 public class KeelSheetMatrix {
     private final List<String> headerRow;

@@ -7,11 +7,10 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * It is designed to be overridden for customized row reader.
+ * Excel 表格矩阵行类，表示 Excel 表格矩阵中的一行数据。
+ * 该类设计为可被重写以实现自定义的行读取器，并使用 BigDecimal 处理单元格的数值。
  *
- * @since 3.0.14
- * @since 3.0.18 Finished Technical Preview.
- * @since 3.1.1 Use BigDecimal to handle the number value of cells.
+ * @since 5.0.0
  */
 public class KeelSheetMatrixRow {
     private final List<String> rawRow;

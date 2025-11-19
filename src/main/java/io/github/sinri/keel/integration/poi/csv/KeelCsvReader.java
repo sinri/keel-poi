@@ -12,13 +12,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 /**
- * As of 4.1.1, implements {@link Closeable}, and deprecates all the asynchronous methods.
+ * CSV 文件读取器，提供对 CSV 文件的解析和读取功能。
  * <p>
- * Call static method {@link KeelCsvReader#read(InputStream, Charset, String, Function)} is the recommended usage.
+ * 推荐使用静态方法 {@link KeelCsvReader#read(InputStream, Charset, String, Function)}。
  * <p>
- *     TODO: implement {@link Iterator} in the future, and remove all the asynchronous methods.
+ *     TODO: 将来实现 {@link Iterator} 接口，并移除所有异步方法。
  *
- * @since 3.1.1
+ * @since 5.0.0
  */
 public class KeelCsvReader implements Closeable {
     private final BufferedReader br;

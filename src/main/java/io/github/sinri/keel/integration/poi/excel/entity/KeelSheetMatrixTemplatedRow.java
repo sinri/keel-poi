@@ -6,8 +6,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 /**
- * @since 3.0.13
- * @since 3.0.18 Finished Technical Preview.
+ * Excel 表格模板化行接口，表示带有模板结构的表格行。
+ * 该接口提供了基于列索引或列名获取列值的方法，以及将行数据转换为 JSON 对象的功能。
+ *
+ * @since 5.0.0
  */
 public interface KeelSheetMatrixTemplatedRow {
     static KeelSheetMatrixTemplatedRow create(@NotNull KeelSheetMatrixRowTemplate template, @NotNull List<String> rawRow) {

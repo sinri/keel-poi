@@ -9,8 +9,10 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * @since 3.0.13
- * @since 3.0.18 Finished Technical Preview.
+ * Excel 表格矩阵行模板实现类，实现列结构定义的接口。
+ * 该类提供了列名到列索引的映射功能。
+ *
+ * @since 5.0.0
  */
 public class KeelSheetMatrixRowTemplateImpl implements KeelSheetMatrixRowTemplate {
     private final List<String> headerRow;

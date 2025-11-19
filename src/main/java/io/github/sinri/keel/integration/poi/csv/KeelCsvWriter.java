@@ -18,12 +18,12 @@ import java.util.function.Function;
 
 
 /**
- * As of 4.1.1, implements {@link Closeable}, and deprecates all the asynchronous write methods.
+ * CSV 文件写入器，提供对 CSV 文件的生成和写入功能。
  * <p>
- * Call static method {@link KeelCsvWriter#write(OutputStream, String, Charset, Function)} or
- * {@link KeelCsvWriter#write(OutputStream, Function)} is the recommended usage.
+ * 推荐使用静态方法 {@link KeelCsvWriter#write(OutputStream, String, Charset, Function)} 或
+ * {@link KeelCsvWriter#write(OutputStream, Function)}。
  *
- * @since 3.1.1
+ * @since 5.0.0
  */
 public class KeelCsvWriter implements Closeable {
     private final OutputStream outputStream;

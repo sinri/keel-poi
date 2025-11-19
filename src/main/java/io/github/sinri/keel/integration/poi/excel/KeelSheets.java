@@ -21,9 +21,11 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * @since 3.0.13
- * @since 3.0.18 Finished Technical Preview.
- * @since 4.0.2 implements `io.vertx.core.Closeable`, remove `java.lang.AutoCloseable`.
+ * Excel 工作簿管理类，提供对 Excel 工作簿的创建、打开、保存等操作。
+ * <p>
+ *     该类封装了 Apache POI 的工作簿操作，提供了更简洁的 API。
+ *
+ * @since 5.0.0
  */
 public class KeelSheets implements Closeable {
     /**

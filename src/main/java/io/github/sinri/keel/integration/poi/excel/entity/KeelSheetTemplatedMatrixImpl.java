@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @since 3.0.13
- * @since 3.0.18 Finished Technical Preview.
+ * Excel 表格模板化矩阵实现类，实现模板化矩阵接口。
+ * 该类提供了基于模板结构管理表格矩阵数据的具体实现。
+ *
+ * @since 5.0.0
  */
 public class KeelSheetTemplatedMatrixImpl implements KeelSheetTemplatedMatrix {
     private final KeelSheetMatrixRowTemplate template;

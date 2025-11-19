@@ -6,9 +6,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * The columns definition of rows in a templated matrix.
- * @since 3.0.13
- * @since 3.0.18 Finished Technical Preview.
+ * Excel 表格矩阵行模板接口，定义模板化矩阵中行的列结构。
+ * 该接口用于定义表格中的列名和列索引的映射关系。
+ *
+ * @since 5.0.0
  */
 public interface KeelSheetMatrixRowTemplate {
     static KeelSheetMatrixRowTemplate create(@NotNull List<String> headerRow) {
