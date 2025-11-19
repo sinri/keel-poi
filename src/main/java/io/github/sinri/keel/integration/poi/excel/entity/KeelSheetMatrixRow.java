@@ -1,7 +1,8 @@
 package io.github.sinri.keel.integration.poi.excel.entity;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class KeelSheetMatrixRow {
         this.rawRow = rawRow;
     }
 
-    @Nonnull
+    @NotNull
     public String readValue(int i) {
         return rawRow.get(i);
     }

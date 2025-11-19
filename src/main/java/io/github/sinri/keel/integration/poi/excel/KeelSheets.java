@@ -1,7 +1,7 @@
 package io.github.sinri.keel.integration.poi.excel;
 
 import com.github.pjfanning.xlsx.impl.StreamingWorkbook;
-import io.github.sinri.keel.core.ValueBox;
+import io.github.sinri.keel.core.utils.value.ValueBox;
 import io.vertx.core.Closeable;
 import io.vertx.core.Completable;
 import io.vertx.core.Future;
@@ -13,9 +13,9 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.*;
 import java.util.Objects;
 import java.util.function.Function;
@@ -30,7 +30,7 @@ public class KeelSheets implements Closeable {
      * @since 3.1.3
      */
     private final @Nullable FormulaEvaluator formulaEvaluator;
-    protected @Nonnull Workbook autoWorkbook;
+    protected @NotNull Workbook autoWorkbook;
     /**
      * This field is null for write mode.
      */
@@ -41,7 +41,7 @@ public class KeelSheets implements Closeable {
      * @param workbook The generated POI Workbook Implementation.
      * @since 3.0.20
      */
-    protected KeelSheets(@Nullable KeelSheetsReaderType sheetsReaderType, @Nonnull Workbook workbook) {
+    protected KeelSheets(@Nullable KeelSheetsReaderType sheetsReaderType, @NotNull Workbook workbook) {
         this(sheetsReaderType, workbook, false);
     }
 
@@ -71,8 +71,8 @@ public class KeelSheets implements Closeable {
     /**
      * @since 4.0.2
      */
-    public static <T> Future<T> useSheets(@Nonnull SheetsOpenOptions sheetsOpenOptions,
-                                          @Nonnull Function<KeelSheets, Future<T>> usage) {
+    public static <T> Future<T> useSheets(@NotNull SheetsOpenOptions sheetsOpenOptions,
+                                          @NotNull Function<KeelSheets, Future<T>> usage) {
         return Future.succeededFuture()
                      .compose(v -> {
                          try {
@@ -157,8 +157,8 @@ public class KeelSheets implements Closeable {
     /**
      * @since 4.0.2
      */
-    public static <T> Future<T> useSheets(@Nonnull SheetsCreateOptions sheetsCreateOptions,
-                                          @Nonnull Function<KeelSheets, Future<T>> usage) {
+    public static <T> Future<T> useSheets(@NotNull SheetsCreateOptions sheetsCreateOptions,
+                                          @NotNull Function<KeelSheets, Future<T>> usage) {
         return Future.succeededFuture()
                      .compose(v -> {
                          KeelSheets keelSheets;
@@ -191,14 +191,14 @@ public class KeelSheets implements Closeable {
         return this;
     }
 
-    public KeelSheet generateReaderForSheet(@Nonnull String sheetName) {
+    public KeelSheet generateReaderForSheet(@NotNull String sheetName) {
         return this.generateReaderForSheet(sheetName, true);
     }
 
     /**
      * @since 3.1.4
      */
-    public KeelSheet generateReaderForSheet(@Nonnull String sheetName, boolean parseFormulaCellToValue) {
+    public KeelSheet generateReaderForSheet(@NotNull String sheetName, boolean parseFormulaCellToValue) {
         var sheet = this.getWorkbook().getSheet(sheetName);
         ValueBox<FormulaEvaluator> formulaEvaluatorValueBox = new ValueBox<>();
         if (parseFormulaCellToValue) {
@@ -223,7 +223,7 @@ public class KeelSheets implements Closeable {
         return new KeelSheet(sheetsReaderType, sheet, formulaEvaluatorValueBox);
     }
 
-    public KeelSheet generateWriterForSheet(@Nonnull String sheetName, Integer pos) {
+    public KeelSheet generateWriterForSheet(@NotNull String sheetName, Integer pos) {
         Sheet sheet = this.getWorkbook().createSheet(sheetName);
         if (pos != null) {
             this.getWorkbook().setSheetOrder(sheetName, pos);
@@ -231,7 +231,7 @@ public class KeelSheets implements Closeable {
         return new KeelSheet(null, sheet, new ValueBox<>(this.formulaEvaluator));
     }
 
-    public KeelSheet generateWriterForSheet(@Nonnull String sheetName) {
+    public KeelSheet generateWriterForSheet(@NotNull String sheetName) {
         return generateWriterForSheet(sheetName, null);
     }
 
@@ -242,7 +242,7 @@ public class KeelSheets implements Closeable {
     /**
      * @return Raw Apache POI Workbook instance.
      */
-    @Nonnull
+    @NotNull
     public Workbook getWorkbook() {
         return autoWorkbook;
     }

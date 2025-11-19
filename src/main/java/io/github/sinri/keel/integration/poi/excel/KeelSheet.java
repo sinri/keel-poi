@@ -1,13 +1,12 @@
 package io.github.sinri.keel.integration.poi.excel;
 
-import io.github.sinri.keel.core.TechnicalPreview;
-import io.github.sinri.keel.core.ValueBox;
+import io.github.sinri.keel.core.utils.value.ValueBox;
 import io.github.sinri.keel.integration.poi.excel.entity.*;
 import io.vertx.core.Future;
 import org.apache.poi.ss.usermodel.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -17,18 +16,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static io.github.sinri.keel.facade.KeelInstance.Keel;
+import static io.github.sinri.keel.base.KeelInstance.Keel;
 
-/**
- * @since 3.0.13
- * @since 3.0.18 Finished Technical Preview.
- */
 public class KeelSheet {
     private final Sheet sheet;
     /**
      * @since 3.1.3
      */
-    private final @Nonnull ValueBox<FormulaEvaluator> formulaEvaluatorBox;
+    private final @NotNull ValueBox<FormulaEvaluator> formulaEvaluatorBox;
     /**
      * This field is null for write mode.
      */
@@ -41,7 +36,7 @@ public class KeelSheet {
      * <p>
      * As of 4.1.1, it is package-protected.
      */
-    KeelSheet(@Nullable KeelSheetsReaderType sheetsReaderType, @Nonnull Sheet sheet) {
+    KeelSheet(@Nullable KeelSheetsReaderType sheetsReaderType, @NotNull Sheet sheet) {
         this(sheetsReaderType, sheet, new ValueBox<>());
     }
 
@@ -52,7 +47,7 @@ public class KeelSheet {
      *
      * @since 3.1.4
      */
-    KeelSheet(@Nullable KeelSheetsReaderType sheetsReaderType, @Nonnull Sheet sheet, @Nonnull ValueBox<FormulaEvaluator> formulaEvaluatorBox) {
+    KeelSheet(@Nullable KeelSheetsReaderType sheetsReaderType, @NotNull Sheet sheet, @NotNull ValueBox<FormulaEvaluator> formulaEvaluatorBox) {
         this.sheetsReaderType = sheetsReaderType;
         this.sheet = sheet;
         this.formulaEvaluatorBox = formulaEvaluatorBox;
@@ -90,10 +85,10 @@ public class KeelSheet {
      *
      * @since 3.0.14
      */
-    @Nonnull
+    @NotNull
     public static String dumpCellToString(
             @Nullable Cell cell,
-            @Nonnull ValueBox<FormulaEvaluator> formulaEvaluatorBox
+            @NotNull ValueBox<FormulaEvaluator> formulaEvaluatorBox
     ) {
         if (cell == null) return "";
         CellType cellType = cell.getCellType();
@@ -143,10 +138,10 @@ public class KeelSheet {
      * As of 4.1.1 make it public.
      */
     public static @Nullable List<String> dumpRowToRawRow(
-            @Nonnull Row row,
+            @NotNull Row row,
             int maxColumns,
             @Nullable SheetRowFilter sheetRowFilter,
-            @Nonnull ValueBox<FormulaEvaluator> formulaEvaluatorBox
+            @NotNull ValueBox<FormulaEvaluator> formulaEvaluatorBox
     ) {
         List<String> rowDatum = new ArrayList<>();
 
@@ -187,7 +182,7 @@ public class KeelSheet {
      * @return A list of {@link KeelPictureInSheet} read from the sheet.
      * @since 4.1.1
      */
-    @Nonnull
+    @NotNull
     public List<KeelPictureInSheet> getPictures() {
         return getDrawing().getPictures();
     }
@@ -231,7 +226,7 @@ public class KeelSheet {
         };
     }
 
-    public final void blockReadAllRows(@Nonnull Consumer<Row> rowConsumer) {
+    public final void blockReadAllRows(@NotNull Consumer<Row> rowConsumer) {
         Iterator<Row> it = getRowIterator();
 
         while (it.hasNext()) {
@@ -351,14 +346,14 @@ public class KeelSheet {
      * Consider calling this method in worker context.
      * Process row by row is not effective enough.
      */
-    public final Future<Void> readAllRows(@Nonnull Function<Row, Future<Void>> rowFunc) {
+    public final Future<Void> readAllRows(@NotNull Function<Row, Future<Void>> rowFunc) {
         return Keel.asyncCallIteratively(getRowIterator(), rowFunc);
     }
 
     /**
      * Consider calling this method in worker context.
      */
-    public final Future<Void> readAllRows(@Nonnull Function<List<Row>, Future<Void>> rowsFunc, int batchSize) {
+    public final Future<Void> readAllRows(@NotNull Function<List<Row>, Future<Void>> rowsFunc, int batchSize) {
         return Keel.asyncCallIteratively(
                 getRowIterator(),
                 rowsFunc,
@@ -474,7 +469,7 @@ public class KeelSheet {
     }
 
 
-    public void blockWriteAllRows(@Nonnull List<List<String>> rowData, int sinceRowIndex, int sinceCellIndex) {
+    public void blockWriteAllRows(@NotNull List<List<String>> rowData, int sinceRowIndex, int sinceCellIndex) {
         for (int rowIndex = 0; rowIndex < rowData.size(); rowIndex++) {
             Row row = sheet.getRow(sinceRowIndex + rowIndex);
             if (row == null) {
@@ -485,11 +480,11 @@ public class KeelSheet {
         }
     }
 
-    public void blockWriteAllRows(@Nonnull List<List<String>> rowData) {
+    public void blockWriteAllRows(@NotNull List<List<String>> rowData) {
         blockWriteAllRows(rowData, 0, 0);
     }
 
-    public void blockWriteMatrix(@Nonnull KeelSheetMatrix matrix) {
+    public void blockWriteMatrix(@NotNull KeelSheetMatrix matrix) {
         if (matrix.getHeaderRow().isEmpty()) {
             blockWriteAllRows(matrix.getRawRowList(), 0, 0);
         } else {
@@ -498,7 +493,7 @@ public class KeelSheet {
         }
     }
 
-    public Future<Void> writeMatrix(@Nonnull KeelSheetMatrix matrix) {
+    public Future<Void> writeMatrix(@NotNull KeelSheetMatrix matrix) {
         AtomicInteger rowIndexRef = new AtomicInteger(0);
         if (!matrix.getHeaderRow().isEmpty()) {
             blockWriteAllRows(List.of(matrix.getHeaderRow()), 0, 0);
@@ -512,7 +507,7 @@ public class KeelSheet {
         }, 1000);
     }
 
-    public void blockWriteTemplatedMatrix(@Nonnull KeelSheetTemplatedMatrix templatedMatrix) {
+    public void blockWriteTemplatedMatrix(@NotNull KeelSheetTemplatedMatrix templatedMatrix) {
         AtomicInteger rowIndexRef = new AtomicInteger(0);
         blockWriteAllRows(List.of(templatedMatrix.getTemplate().getColumnNames()), 0, 0);
         rowIndexRef.incrementAndGet();
@@ -520,7 +515,7 @@ public class KeelSheet {
                        .forEach(templatedRow -> blockWriteAllRows(List.of(templatedRow.getRawRow()), rowIndexRef.get(), 0));
     }
 
-    public Future<Void> writeTemplatedMatrix(@Nonnull KeelSheetTemplatedMatrix templatedMatrix) {
+    public Future<Void> writeTemplatedMatrix(@NotNull KeelSheetTemplatedMatrix templatedMatrix) {
         AtomicInteger rowIndexRef = new AtomicInteger(0);
         blockWriteAllRows(List.of(templatedMatrix.getTemplate().getColumnNames()), 0, 0);
         rowIndexRef.incrementAndGet();
@@ -546,10 +541,6 @@ public class KeelSheet {
         }
     }
 
-    /**
-     * @since 3.2.11
-     */
-    @TechnicalPreview(since = "3.2.11")
     public Iterator<KeelSheetMatrixRow> getMatrixRowIterator(int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
         Iterator<List<String>> rawRowIterator = this.getRawRowIterator(maxColumns, sheetRowFilter);
         return new Iterator<>() {
@@ -566,12 +557,8 @@ public class KeelSheet {
 
     }
 
-    /**
-     * @since 3.2.11
-     */
-    @TechnicalPreview(since = "3.2.11")
     public Iterator<KeelSheetMatrixTemplatedRow> getTemplatedMatrixRowIterator(
-            @Nonnull KeelSheetMatrixRowTemplate template,
+            @NotNull KeelSheetMatrixRowTemplate template,
             int maxColumns,
             @Nullable SheetRowFilter sheetRowFilter
     ) {

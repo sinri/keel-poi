@@ -1,32 +1,27 @@
 package io.github.sinri.keel.integration.poi.excel;
 
-import io.github.sinri.keel.core.TechnicalPreview;
-import io.github.sinri.keel.core.ValueBox;
+import io.github.sinri.keel.core.utils.value.ValueBox;
 import org.apache.poi.hssf.usermodel.HSSFPatriarch;
 import org.apache.poi.hssf.usermodel.HSSFPicture;
 import org.apache.poi.hssf.usermodel.HSSFShape;
 import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import org.apache.poi.xssf.usermodel.XSSFPicture;
 import org.apache.poi.xssf.usermodel.XSSFShape;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * @since 4.1.1
- */
-@TechnicalPreview(since = "4.1.1")
 class KeelSheetDrawing {
-    @Nonnull
+    @NotNull
     private final ValueBox<XSSFDrawing> drawingForXlsxValueBox = new ValueBox<>();
-    @Nonnull
+    @NotNull
     private final ValueBox<HSSFPatriarch> drawingForXlsValueBox = new ValueBox<>();
 
 
-    public KeelSheetDrawing(@Nonnull KeelSheet keelSheet) {
+    public KeelSheetDrawing(@NotNull KeelSheet keelSheet) {
         drawingForXlsxValueBox.setValue(null);
         drawingForXlsValueBox.setValue(null);
         if (keelSheet.getSheetsReaderType() == KeelSheetsReaderType.XLSX) {
@@ -46,7 +41,7 @@ class KeelSheetDrawing {
         }
     }
 
-    @Nonnull
+    @NotNull
     public List<KeelPictureInSheet> getPictures() {
         List<KeelPictureInSheet> list = new ArrayList<>();
 

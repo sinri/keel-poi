@@ -1,9 +1,10 @@
 package io.github.sinri.keel.integration.poi.csv;
 
-import io.github.sinri.keel.core.ValueBox;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import io.github.sinri.keel.core.utils.value.ValueBox;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.math.BigDecimal;
 
 /**
@@ -110,8 +111,8 @@ public class CsvCell {
      *         cell value is not a number
      * @since 4.1.1
      */
-    @Nonnull
-    public BigDecimal getNumberOrElse(@Nonnull BigDecimal defaultValue) {
+    @NotNull
+    public BigDecimal getNumberOrElse(@NotNull BigDecimal defaultValue) {
         try {
             
             var x = getNumber();

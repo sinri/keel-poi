@@ -1,9 +1,9 @@
 package io.github.sinri.keel.integration.poi.csv;
 
 import io.vertx.core.Future;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Iterator;
@@ -27,23 +27,23 @@ public class KeelCsvReader implements Closeable {
     /**
      * @since 4.1.1
      */
-    public KeelCsvReader(@Nonnull BufferedReader br, @Nonnull String separator) {
+    public KeelCsvReader(@NotNull BufferedReader br, @NotNull String separator) {
         this.br = br;
         this.separator = separator;
     }
 
-    public KeelCsvReader(@Nonnull InputStream inputStream, Charset charset) {
+    public KeelCsvReader(@NotNull InputStream inputStream, Charset charset) {
         this(inputStream, charset, ",");
     }
 
     /**
      * @since 4.1.1
      */
-    public KeelCsvReader(@Nonnull InputStream inputStream, @Nonnull Charset charset, @Nonnull String separator) {
+    public KeelCsvReader(@NotNull InputStream inputStream, @NotNull Charset charset, @NotNull String separator) {
         this(new BufferedReader(new InputStreamReader(inputStream, charset)), separator);
     }
 
-    public KeelCsvReader(@Nonnull BufferedReader br) {
+    public KeelCsvReader(@NotNull BufferedReader br) {
         this(br, ",");
     }
 
@@ -56,8 +56,8 @@ public class KeelCsvReader implements Closeable {
      * @since 4.1.1
      */
     public static Future<Void> read(
-            @Nonnull InputStream inputStream, @Nonnull Charset charset, @Nonnull String separator,
-            @Nonnull Function<KeelCsvReader, Future<Void>> readFunc
+            @NotNull InputStream inputStream, @NotNull Charset charset, @NotNull String separator,
+            @NotNull Function<KeelCsvReader, Future<Void>> readFunc
     ) {
         AtomicReference<KeelCsvReader> ref = new AtomicReference<>();
         return Future.succeededFuture()
@@ -109,7 +109,7 @@ public class KeelCsvReader implements Closeable {
      * @param line       the raw text of the line
      * @return the parsed row instance; may be incompleted during recursion.
      */
-    private CsvRow consumeOneLine(@Nullable CsvRow row, @Nullable StringBuilder buffer, int quoterFlag, @Nonnull String line) throws IOException {
+    private CsvRow consumeOneLine(@Nullable CsvRow row, @Nullable StringBuilder buffer, int quoterFlag, @NotNull String line) throws IOException {
         if (row == null) {
             row = new CsvRow();
         }

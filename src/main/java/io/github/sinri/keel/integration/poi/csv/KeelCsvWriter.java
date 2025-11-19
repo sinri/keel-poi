@@ -1,9 +1,9 @@
 package io.github.sinri.keel.integration.poi.csv;
 
 import io.vertx.core.Future;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -16,7 +16,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-import static io.github.sinri.keel.facade.KeelInstance.Keel;
 
 /**
  * As of 4.1.1, implements {@link Closeable}, and deprecates all the asynchronous write methods.
@@ -32,14 +31,14 @@ public class KeelCsvWriter implements Closeable {
     private final String separator;
     private final Charset charset;
 
-    public KeelCsvWriter(@Nonnull OutputStream outputStream) {
+    public KeelCsvWriter(@NotNull OutputStream outputStream) {
         this(outputStream, ",", StandardCharsets.UTF_8);
     }
 
     /**
      * @since 4.1.1
      */
-    public KeelCsvWriter(@Nonnull OutputStream outputStream, @Nonnull String separator, @Nonnull Charset charset) {
+    public KeelCsvWriter(@NotNull OutputStream outputStream, @NotNull String separator, @NotNull Charset charset) {
         this.outputStream = outputStream;
         this.separator = separator;
         this.charset = charset;
@@ -54,10 +53,10 @@ public class KeelCsvWriter implements Closeable {
      * @since 4.1.1
      */
     public static Future<Void> write(
-            @Nonnull OutputStream outputStream,
-            @Nonnull String separator,
-            @Nonnull Charset charset,
-            @Nonnull Function<KeelCsvWriter, Future<Void>> writeCsvFunc
+            @NotNull OutputStream outputStream,
+            @NotNull String separator,
+            @NotNull Charset charset,
+            @NotNull Function<KeelCsvWriter, Future<Void>> writeCsvFunc
     ) {
         AtomicReference<KeelCsvWriter> ref = new AtomicReference<>();
         return Future.succeededFuture()
@@ -92,8 +91,8 @@ public class KeelCsvWriter implements Closeable {
      * @since 4.1.1
      */
     public static Future<Void> write(
-            @Nonnull OutputStream outputStream,
-            @Nonnull Function<KeelCsvWriter, Future<Void>> writeCsvFunc
+            @NotNull OutputStream outputStream,
+            @NotNull Function<KeelCsvWriter, Future<Void>> writeCsvFunc
     ) {
         return write(outputStream, ",", StandardCharsets.UTF_8, writeCsvFunc);
     }
@@ -105,7 +104,7 @@ public class KeelCsvWriter implements Closeable {
      *
      * @since 4.1.1
      */
-    public void writeCell(@Nonnull String cellValue) throws IOException {
+    public void writeCell(@NotNull String cellValue) throws IOException {
         synchronized (atLineBeginningRef) {
             writeToOutputStream(quote(cellValue) + separator);
             atLineBeginningRef.set(false);
@@ -126,7 +125,7 @@ public class KeelCsvWriter implements Closeable {
         }
     }
 
-    private void writeToOutputStream(@Nonnull String anything) throws IOException {
+    private void writeToOutputStream(@NotNull String anything) throws IOException {
         outputStream.write(anything.getBytes(charset));
     }
 
@@ -135,7 +134,7 @@ public class KeelCsvWriter implements Closeable {
      * <p>
      * If an incomplete row is already written, a LINE ENDING would be added first to enforce a new row output.
      */
-    public void blockWriteRow(@Nonnull List<String> list) throws IOException {
+    public void blockWriteRow(@NotNull List<String> list) throws IOException {
         synchronized (atLineBeginningRef) {
             if (!atLineBeginningRef.get()) {
                 writeToOutputStream("\n");
@@ -143,7 +142,7 @@ public class KeelCsvWriter implements Closeable {
             }
             List<String> components = new ArrayList<>();
             list.forEach(item -> components.add(quote(item)));
-            var line = Keel.stringHelper().joinStringArray(components, separator) + "\n";
+            var line = String.join(separator, components) + "\n";
             writeToOutputStream(line);
         }
     }

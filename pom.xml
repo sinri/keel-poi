@@ -47,8 +47,8 @@
     <dependencies>
         <dependency>
             <groupId>io.github.sinri</groupId>
-            <artifactId>Keel</artifactId>
-            <version>5.0.0-SNAPSHOT</version>
+            <artifactId>keel-core</artifactId>
+            <version>5.0.0-rc.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

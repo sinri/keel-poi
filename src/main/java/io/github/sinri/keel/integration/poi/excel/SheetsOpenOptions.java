@@ -2,9 +2,9 @@ package io.github.sinri.keel.integration.poi.excel;
 
 import com.github.pjfanning.xlsx.StreamingReader;
 import io.vertx.core.Handler;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Objects;
@@ -55,12 +55,12 @@ public class SheetsOpenOptions {
         return this.file;
     }
 
-    public SheetsOpenOptions setFile(@Nonnull File file) {
+    public SheetsOpenOptions setFile(@NotNull File file) {
         this.file = file;
         return this;
     }
 
-    public SheetsOpenOptions setFile(@Nonnull String filePath) {
+    public SheetsOpenOptions setFile(@NotNull String filePath) {
         this.file = new File(filePath);
         return this;
     }
@@ -70,7 +70,7 @@ public class SheetsOpenOptions {
         return inputStream;
     }
 
-    public SheetsOpenOptions setInputStream(@Nonnull InputStream inputStream) {
+    public SheetsOpenOptions setInputStream(@NotNull InputStream inputStream) {
         this.inputStream = inputStream;
         return this;
     }
@@ -84,7 +84,7 @@ public class SheetsOpenOptions {
      *
      * @return the {@link SheetsOpenOptions#hugeXlsxStreamingReaderBuilder}.
      */
-    @Nonnull
+    @NotNull
     public StreamingReader.Builder getHugeXlsxStreamingReaderBuilder() {
         Objects.requireNonNull(this.hugeXlsxStreamingReaderBuilder);
         return hugeXlsxStreamingReaderBuilder;
@@ -103,7 +103,7 @@ public class SheetsOpenOptions {
      *
      * @see <a href="https://github.com/pjfanning/excel-streaming-reader">PJFANNING::ExcelStreamingReader</a>
      */
-    public SheetsOpenOptions setHugeXlsxStreamingReaderBuilder(@Nonnull Handler<StreamingReader.Builder> streamingReaderBuilderHandler) {
+    public SheetsOpenOptions setHugeXlsxStreamingReaderBuilder(@NotNull Handler<StreamingReader.Builder> streamingReaderBuilderHandler) {
         var hugeXlsxStreamingReaderBuilder = new StreamingReader.Builder();
 
         // number of rows to keep in memory (defaults to 10)
@@ -130,7 +130,7 @@ public class SheetsOpenOptions {
     /**
      * @since 4.0.2
      */
-    public SheetsOpenOptions setUseXlsx(@Nonnull Boolean useXlsx) {
+    public SheetsOpenOptions setUseXlsx(@NotNull Boolean useXlsx) {
         this.useXlsx = useXlsx;
         return this;
     }

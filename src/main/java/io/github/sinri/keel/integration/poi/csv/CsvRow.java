@@ -1,6 +1,7 @@
 package io.github.sinri.keel.integration.poi.csv;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,12 +11,12 @@ import java.util.List;
 public class CsvRow {
     private final List<CsvCell> cells = new ArrayList<>();
 
-    public CsvRow addCell(@Nonnull CsvCell cell) {
+    public CsvRow addCell(@NotNull CsvCell cell) {
         this.cells.add(cell);
         return this;
     }
 
-    @Nonnull
+    @NotNull
     public CsvCell getCell(int i) {
         return cells.get(i);
     }

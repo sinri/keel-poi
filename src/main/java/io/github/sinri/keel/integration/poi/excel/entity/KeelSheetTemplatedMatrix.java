@@ -1,6 +1,7 @@
 package io.github.sinri.keel.integration.poi.excel.entity;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
 /**
@@ -8,7 +9,7 @@ import java.util.List;
  * @since 3.0.18 Finished Technical Preview.
  */
 public interface KeelSheetTemplatedMatrix {
-    static KeelSheetTemplatedMatrix create(@Nonnull KeelSheetMatrixRowTemplate template) {
+    static KeelSheetTemplatedMatrix create(@NotNull KeelSheetMatrixRowTemplate template) {
         return new KeelSheetTemplatedMatrixImpl(template);
     }
 
@@ -20,9 +21,9 @@ public interface KeelSheetTemplatedMatrix {
 
     List<List<String>> getRawRows();
 
-    KeelSheetTemplatedMatrix addRawRow(@Nonnull List<String> rawRow);
+    KeelSheetTemplatedMatrix addRawRow(@NotNull List<String> rawRow);
 
-    default KeelSheetTemplatedMatrix addRawRows(@Nonnull List<List<String>> rawRows) {
+    default KeelSheetTemplatedMatrix addRawRows(@NotNull List<List<String>> rawRows) {
         rawRows.forEach(this::addRawRow);
         return this;
     }

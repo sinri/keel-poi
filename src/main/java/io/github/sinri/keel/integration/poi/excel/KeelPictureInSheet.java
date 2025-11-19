@@ -5,8 +5,8 @@ import org.apache.poi.hssf.usermodel.HSSFPicture;
 import org.apache.poi.hssf.usermodel.HSSFPictureData;
 import org.apache.poi.xssf.usermodel.XSSFPicture;
 import org.apache.poi.xssf.usermodel.XSSFPictureData;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 
 public class KeelPictureInSheet {
     private final int atRow;
@@ -18,7 +18,7 @@ public class KeelPictureInSheet {
     private final byte[] data;
     private final int workbookDefinedPictureType;
 
-    public KeelPictureInSheet(@Nonnull XSSFPicture xssfPicture) {
+    public KeelPictureInSheet(@NotNull XSSFPicture xssfPicture) {
         if (xssfPicture.getClientAnchor() != null) {
             var anchor = xssfPicture.getClientAnchor();
             atRow = anchor.getRow1() + 1; // 转换为Excel行号（从1开始）
@@ -40,7 +40,7 @@ public class KeelPictureInSheet {
 
     }
 
-    public KeelPictureInSheet(@Nonnull HSSFPicture hssfPicture) {
+    public KeelPictureInSheet(@NotNull HSSFPicture hssfPicture) {
         HSSFClientAnchor anchor = hssfPicture.getClientAnchor();
         if (anchor != null) {
             atRow = anchor.getRow1() + 1; // 转换为Excel行号（从1开始）
