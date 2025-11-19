@@ -40,8 +40,8 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <vertxVersion>5.0.5</vertxVersion>
-        <poiVersion>5.4.1</poiVersion>
-        <excelStreamingReader>5.1.1</excelStreamingReader>
+        <poiVersion>5.5.0</poiVersion>
+        <excelStreamingReader>5.1.2</excelStreamingReader>
     </properties>
 
     <dependencies>

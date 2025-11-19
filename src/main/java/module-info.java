@@ -5,6 +5,7 @@ module io.github.sinri.keel.integration.poi {
     requires org.apache.poi.ooxml;
     requires org.apache.poi.poi;
     requires org.jetbrains.annotations;
+    requires java.desktop;
 
     exports io.github.sinri.keel.integration.poi.csv;
     exports io.github.sinri.keel.integration.poi.excel;
