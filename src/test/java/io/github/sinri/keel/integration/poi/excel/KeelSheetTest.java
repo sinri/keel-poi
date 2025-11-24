@@ -40,7 +40,6 @@ class KeelSheetTest extends KeelJUnit5Test {
         super(vertx);
     }
 
-    @Override
     protected void test(VertxTestContext testContext) {
         testContext.completeNow();
     }

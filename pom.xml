@@ -6,8 +6,8 @@
 
     <groupId>io.github.sinri</groupId>
     <artifactId>keel-poi</artifactId>
-    <!--        <version>5.0.0-SNAPSHOT</version>-->
-    <version>5.0.0-rc.2</version>
+    <!--            <version>5.0.0-SNAPSHOT</version>-->
+    <version>5.0.0-rc.3</version>
 
     <name>Keel Integration for POI</name>
     <description>
@@ -47,7 +47,7 @@
         <mavenGpgPluginVersion>3.2.8</mavenGpgPluginVersion>
         <nexusStagingMavenPluginVersion>1.7.0</nexusStagingMavenPluginVersion>
         <vertxVersion>5.0.5</vertxVersion>
-        <poiVersion>5.5.0</poiVersion>
+        <poiVersion>5.4.1</poiVersion>
         <excelStreamingReader>5.1.2</excelStreamingReader>
     </properties>
 
@@ -188,22 +188,22 @@
         <dependency>
             <groupId>io.github.sinri</groupId>
             <artifactId>keel-core</artifactId>
-            <version>5.0.0-rc.4</version>
+            <version>5.0.0-rc.7</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.github.sinri</groupId>
             <artifactId>keel-test</artifactId>
-            <version>5.0.0-rc.3</version>
+            <version>5.0.0-rc.7</version>
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>${poiVersion}</version>
-            <!-- its dependency maven:org.apache.commons:commons-lang3:3.16.0 vulnerable, to 3.18.0 -->
-        </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>org.apache.poi</groupId>-->
+        <!--            <artifactId>poi-ooxml</artifactId>-->
+        <!--            <version>${poiVersion}</version>-->
+        <!--            &lt;!&ndash; its dependency maven:org.apache.commons:commons-lang3:3.16.0 vulnerable, to 3.18.0 &ndash;&gt;-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
