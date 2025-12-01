@@ -1,5 +1,6 @@
 package io.github.sinri.keel.integration.poi.excel;
 
+import io.github.sinri.keel.base.Keel;
 import io.github.sinri.keel.core.utils.value.ValueBox;
 import io.github.sinri.keel.integration.poi.excel.entity.*;
 import io.vertx.core.Future;
@@ -16,7 +17,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static io.github.sinri.keel.base.KeelInstance.Keel;
 
 /**
  * Excel 工作表操作类，提供对 Excel 工作表的读写操作。
@@ -26,6 +26,7 @@ import static io.github.sinri.keel.base.KeelInstance.Keel;
  * @since 5.0.0
  */
 public class KeelSheet {
+    @NotNull
     private final Sheet sheet;
     /**
      * 公式求值器值盒子，用于存储公式求值器实例。
@@ -281,7 +282,7 @@ public class KeelSheet {
      *
      * @param rowConsumer 行消费者，用于处理每一行数据
      */
-    public final void blockReadAllRows(@NotNull Consumer<Row> rowConsumer) {
+    public final void readAllRows(@NotNull Consumer<Row> rowConsumer) {
         Iterator<Row> it = getRowIterator();
 
         while (it.hasNext()) {
@@ -295,7 +296,7 @@ public class KeelSheet {
      *
      * @return 原始的 Apache POI 工作表实例
      */
-    public Sheet getSheet() {
+    public @NotNull Sheet getSheet() {
         return sheet;
     }
 
@@ -304,8 +305,8 @@ public class KeelSheet {
      *
      * @return 读取的矩阵对象
      */
-    public final KeelSheetMatrix blockReadAllRowsToMatrix() {
-        return blockReadAllRowsToMatrix(0, 0, SheetRowFilter.toThrowEmptyRows());
+    public final KeelSheetMatrix readAllRowsToMatrix() {
+        return readAllRowsToMatrix(0, 0, SheetRowFilter.toThrowEmptyRows());
     }
 
     /**
@@ -316,7 +317,7 @@ public class KeelSheet {
      * @param sheetRowFilter 工作表行过滤器（可选）
      * @return 读取的矩阵对象
      */
-    public final KeelSheetMatrix blockReadAllRowsToMatrix(int headerRowIndex, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
+    public final KeelSheetMatrix readAllRowsToMatrix(int headerRowIndex, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
         if (headerRowIndex < 0) throw new IllegalArgumentException("headerRowIndex less than zero");
 
         KeelSheetMatrix keelSheetMatrix = new KeelSheetMatrix();
@@ -327,7 +328,7 @@ public class KeelSheet {
             checkColumnsRef.set(maxColumns);
         }
 
-        blockReadAllRows(row -> {
+        readAllRows(row -> {
             int currentRowIndex = rowIndex.get();
             if (headerRowIndex == currentRowIndex) {
                 if (checkColumnsRef.get() == 0) {
@@ -356,8 +357,8 @@ public class KeelSheet {
      *
      * @return 读取的模板化矩阵对象
      */
-    public final KeelSheetTemplatedMatrix blockReadAllRowsToTemplatedMatrix() {
-        return blockReadAllRowsToTemplatedMatrix(0, 0, SheetRowFilter.toThrowEmptyRows());
+    public final KeelSheetTemplatedMatrix readAllRowsToTemplatedMatrix() {
+        return readAllRowsToTemplatedMatrix(0, 0, SheetRowFilter.toThrowEmptyRows());
     }
 
     /**
@@ -368,7 +369,7 @@ public class KeelSheet {
      * @param sheetRowFilter 工作表行过滤器（可选）
      * @return 读取的模板化矩阵对象
      */
-    public final KeelSheetTemplatedMatrix blockReadAllRowsToTemplatedMatrix(int headerRowIndex, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
+    public final KeelSheetTemplatedMatrix readAllRowsToTemplatedMatrix(int headerRowIndex, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
         if (headerRowIndex < 0) throw new IllegalArgumentException("headerRowIndex less than zero");
 
         AtomicInteger checkColumnsRef = new AtomicInteger();
@@ -380,7 +381,7 @@ public class KeelSheet {
         AtomicReference<KeelSheetTemplatedMatrix> templatedMatrixRef = new AtomicReference<>();
 
 
-        blockReadAllRows(row -> {
+        readAllRows(row -> {
             int currentRowIndex = rowIndex.get();
             if (currentRowIndex == headerRowIndex) {
                 if (checkColumnsRef.get() == 0) {
@@ -411,8 +412,8 @@ public class KeelSheet {
      * @param rowFunc 行处理函数，用于处理每一行数据
      * @return 表示操作完成的 Future
      */
-    public final Future<Void> readAllRows(@NotNull Function<Row, Future<Void>> rowFunc) {
-        return Keel.asyncCallIteratively(getRowIterator(), rowFunc);
+    public final Future<Void> readAllRowsAsync(@NotNull Keel keel, @NotNull Function<Row, Future<Void>> rowFunc) {
+        return keel.asyncCallIteratively(getRowIterator(), rowFunc);
     }
 
     /**
@@ -423,8 +424,8 @@ public class KeelSheet {
      * @param batchSize 批次大小
      * @return 表示操作完成的 Future
      */
-    public final Future<Void> readAllRows(@NotNull Function<List<Row>, Future<Void>> rowsFunc, int batchSize) {
-        return Keel.asyncCallIteratively(
+    public final Future<Void> readAllRowsAsync(@NotNull Keel keel, @NotNull Function<List<Row>, Future<Void>> rowsFunc, int batchSize) {
+        return keel.asyncCallIteratively(
                 getRowIterator(),
                 rowsFunc,
                 batchSize
@@ -436,8 +437,8 @@ public class KeelSheet {
      *
      * @return 表示矩阵读取完成的 Future
      */
-    public final Future<KeelSheetMatrix> readAllRowsToMatrix() {
-        return readAllRowsToMatrix(0, 0, SheetRowFilter.toThrowEmptyRows());
+    public final Future<KeelSheetMatrix> readAllRowsToMatrixAsync(@NotNull Keel keel) {
+        return readAllRowsToMatrixAsync(keel, 0, 0, SheetRowFilter.toThrowEmptyRows());
     }
 
     /**
@@ -448,7 +449,7 @@ public class KeelSheet {
      * @param sheetRowFilter 工作表行过滤器（可选）
      * @return 表示矩阵读取完成的 Future
      */
-    public final Future<KeelSheetMatrix> readAllRowsToMatrix(int headerRowIndex, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
+    public final Future<KeelSheetMatrix> readAllRowsToMatrixAsync(@NotNull Keel keel, int headerRowIndex, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
         if (headerRowIndex < 0) throw new IllegalArgumentException("headerRowIndex less than zero");
 
         AtomicInteger checkColumnsRef = new AtomicInteger();
@@ -459,7 +460,7 @@ public class KeelSheet {
         KeelSheetMatrix keelSheetMatrix = new KeelSheetMatrix();
         AtomicInteger rowIndex = new AtomicInteger(0);
 
-        return readAllRows(rows -> {
+        return readAllRowsAsync(keel, rows -> {
             rows.forEach(row -> {
                 int currentRowIndex = rowIndex.get();
                 if (headerRowIndex == currentRowIndex) {
@@ -489,8 +490,8 @@ public class KeelSheet {
      *
      * @return 表示模板化矩阵读取完成的 Future
      */
-    public final Future<KeelSheetTemplatedMatrix> readAllRowsToTemplatedMatrix() {
-        return readAllRowsToTemplatedMatrix(0, 0, SheetRowFilter.toThrowEmptyRows());
+    public final Future<KeelSheetTemplatedMatrix> readAllRowsToTemplatedMatrixAsync(@NotNull Keel keel) {
+        return readAllRowsToTemplatedMatrixAsync(keel, 0, 0, SheetRowFilter.toThrowEmptyRows());
     }
 
     /**
@@ -501,7 +502,7 @@ public class KeelSheet {
      * @param sheetRowFilter 工作表行过滤器（可选）
      * @return 表示模板化矩阵读取完成的 Future
      */
-    public final Future<KeelSheetTemplatedMatrix> readAllRowsToTemplatedMatrix(int headerRowIndex, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
+    public final Future<KeelSheetTemplatedMatrix> readAllRowsToTemplatedMatrixAsync(@NotNull Keel keel, int headerRowIndex, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
         if (headerRowIndex < 0) throw new IllegalArgumentException("headerRowIndex less than zero");
 
         AtomicInteger checkColumnsRef = new AtomicInteger();
@@ -512,7 +513,7 @@ public class KeelSheet {
         AtomicInteger rowIndex = new AtomicInteger(0);
         AtomicReference<KeelSheetTemplatedMatrix> templatedMatrixRef = new AtomicReference<>();
 
-        return readAllRows(rows -> {
+        return readAllRowsAsync(keel, rows -> {
             rows.forEach(row -> {
                 int currentRowIndex = rowIndex.get();
                 if (currentRowIndex == headerRowIndex) {
@@ -548,7 +549,7 @@ public class KeelSheet {
      * @param sinceRowIndex  起始行索引
      * @param sinceCellIndex 起始单元格索引
      */
-    public void blockWriteAllRows(@NotNull List<List<String>> rowData, int sinceRowIndex, int sinceCellIndex) {
+    public void writeAllRows(@NotNull List<List<String>> rowData, int sinceRowIndex, int sinceCellIndex) {
         for (int rowIndex = 0; rowIndex < rowData.size(); rowIndex++) {
             Row row = sheet.getRow(sinceRowIndex + rowIndex);
             if (row == null) {
@@ -564,8 +565,8 @@ public class KeelSheet {
      *
      * @param rowData 行数据列表
      */
-    public void blockWriteAllRows(@NotNull List<List<String>> rowData) {
-        blockWriteAllRows(rowData, 0, 0);
+    public void writeAllRows(@NotNull List<List<String>> rowData) {
+        writeAllRows(rowData, 0, 0);
     }
 
     /**
@@ -574,12 +575,12 @@ public class KeelSheet {
      *
      * @param matrix 矩阵数据
      */
-    public void blockWriteMatrix(@NotNull KeelSheetMatrix matrix) {
+    public void writeMatrix(@NotNull KeelSheetMatrix matrix) {
         if (matrix.getHeaderRow().isEmpty()) {
-            blockWriteAllRows(matrix.getRawRowList(), 0, 0);
+            writeAllRows(matrix.getRawRowList(), 0, 0);
         } else {
-            blockWriteAllRows(List.of(matrix.getHeaderRow()), 0, 0);
-            blockWriteAllRows(matrix.getRawRowList(), 1, 0);
+            writeAllRows(List.of(matrix.getHeaderRow()), 0, 0);
+            writeAllRows(matrix.getRawRowList(), 1, 0);
         }
     }
 
@@ -590,15 +591,15 @@ public class KeelSheet {
      * @param matrix 矩阵数据
      * @return 表示写入操作完成的 Future
      */
-    public Future<Void> writeMatrix(@NotNull KeelSheetMatrix matrix) {
+    public Future<Void> writeMatrixAsync(@NotNull Keel keel, @NotNull KeelSheetMatrix matrix) {
         AtomicInteger rowIndexRef = new AtomicInteger(0);
         if (!matrix.getHeaderRow().isEmpty()) {
-            blockWriteAllRows(List.of(matrix.getHeaderRow()), 0, 0);
+            writeAllRows(List.of(matrix.getHeaderRow()), 0, 0);
             rowIndexRef.incrementAndGet();
         }
 
-        return Keel.asyncCallIteratively(matrix.getRawRowList().iterator(), rawRows -> {
-            blockWriteAllRows(matrix.getRawRowList(), rowIndexRef.get(), 0);
+        return keel.asyncCallIteratively(matrix.getRawRowList().iterator(), rawRows -> {
+            writeAllRows(matrix.getRawRowList(), rowIndexRef.get(), 0);
             rowIndexRef.addAndGet(rawRows.size());
             return Future.succeededFuture();
         }, 1000);
@@ -610,12 +611,12 @@ public class KeelSheet {
      *
      * @param templatedMatrix 模板化矩阵数据
      */
-    public void blockWriteTemplatedMatrix(@NotNull KeelSheetTemplatedMatrix templatedMatrix) {
+    public void writeTemplatedMatrix(@NotNull KeelSheetTemplatedMatrix templatedMatrix) {
         AtomicInteger rowIndexRef = new AtomicInteger(0);
-        blockWriteAllRows(List.of(templatedMatrix.getTemplate().getColumnNames()), 0, 0);
+        writeAllRows(List.of(templatedMatrix.getTemplate().getColumnNames()), 0, 0);
         rowIndexRef.incrementAndGet();
         templatedMatrix.getRows()
-                       .forEach(templatedRow -> blockWriteAllRows(List.of(templatedRow.getRawRow()), rowIndexRef.get(), 0));
+                       .forEach(templatedRow -> writeAllRows(List.of(templatedRow.getRawRow()), rowIndexRef.get(), 0));
     }
 
     /**
@@ -625,13 +626,13 @@ public class KeelSheet {
      * @param templatedMatrix 模板化矩阵数据
      * @return 表示写入操作完成的 Future
      */
-    public Future<Void> writeTemplatedMatrix(@NotNull KeelSheetTemplatedMatrix templatedMatrix) {
+    public Future<Void> writeTemplatedMatrixAsync(@NotNull Keel keel, @NotNull KeelSheetTemplatedMatrix templatedMatrix) {
         AtomicInteger rowIndexRef = new AtomicInteger(0);
-        blockWriteAllRows(List.of(templatedMatrix.getTemplate().getColumnNames()), 0, 0);
+        writeAllRows(List.of(templatedMatrix.getTemplate().getColumnNames()), 0, 0);
         rowIndexRef.incrementAndGet();
 
-        return Keel.asyncCallIteratively(templatedMatrix.getRawRows().iterator(), rawRows -> {
-            blockWriteAllRows(rawRows, rowIndexRef.get(), 0);
+        return keel.asyncCallIteratively(templatedMatrix.getRawRows().iterator(), rawRows -> {
+            writeAllRows(rawRows, rowIndexRef.get(), 0);
             rowIndexRef.addAndGet(rawRows.size());
             return Future.succeededFuture();
         }, 1000);
