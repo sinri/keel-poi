@@ -7,7 +7,7 @@
     <groupId>io.github.sinri</groupId>
     <artifactId>keel-poi</artifactId>
     <!--            <version>5.0.0-SNAPSHOT</version>-->
-    <version>5.0.0-rc.15</version>
+    <version>5.0.0-rc.16</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -23,7 +23,7 @@
         <poiVersion>5.4.1</poiVersion>
         <excelStreamingReader>5.1.2</excelStreamingReader>
         <keelTestVersion>5.0.0-rc.19</keelTestVersion>
-        <keelCoreVersion>5.0.0-rc.20</keelCoreVersion>
+        <keelCoreVersion>5.0.0-rc.21</keelCoreVersion>
     </properties>
 
     <name>Keel Integration for POI</name>
