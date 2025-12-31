@@ -10,7 +10,7 @@ module io.github.sinri.keel.integration.poi {
     requires org.apache.commons.compress; // Apache Commons Compress for zip handling
     requires org.apache.commons.codec; // Apache Commons Codec for encoding/decoding
     requires org.apache.commons.io; // Apache Commons IO (Required by POI)
-    requires commons.math3; // Apache Commons Math 3 (Required by POI, filename-based automatic module)
+    // requires commons.math3; // Apache Commons Math 3 (Required by POI, filename-based automatic module) - Commented out as it's a transitive dependency
 
     requires com.github.pjfanning.excelstreamingreader;
 
