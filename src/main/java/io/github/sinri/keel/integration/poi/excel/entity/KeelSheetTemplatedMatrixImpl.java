@@ -1,6 +1,7 @@
 package io.github.sinri.keel.integration.poi.excel.entity;
 
-import org.jetbrains.annotations.NotNull;
+
+import org.jspecify.annotations.NullMarked;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class KeelSheetTemplatedMatrixImpl implements KeelSheetTemplatedMatrix {
     private final KeelSheetMatrixRowTemplate template;
     private final List<List<String>> rawRows;
@@ -23,10 +25,10 @@ public class KeelSheetTemplatedMatrixImpl implements KeelSheetTemplatedMatrix {
      * @param template 行模板
      * @since 5.0.0
      */
-    KeelSheetTemplatedMatrixImpl(@NotNull KeelSheetMatrixRowTemplate template) {
+    KeelSheetTemplatedMatrixImpl(KeelSheetMatrixRowTemplate template) {
         this.template = template;
         this.rawRows = new ArrayList<>();
-//        this.templatedRows = new ArrayList<>();
+        //        this.templatedRows = new ArrayList<>();
     }
 
     /**
@@ -61,7 +63,7 @@ public class KeelSheetTemplatedMatrixImpl implements KeelSheetTemplatedMatrix {
     @Override
     public KeelSheetMatrixTemplatedRow getRow(int index) {
         return KeelSheetMatrixTemplatedRow.create(getTemplate(), this.rawRows.get(index));
-//        return this.templatedRows.get(index);
+        //        return this.templatedRows.get(index);
     }
 
     /**
@@ -85,7 +87,7 @@ public class KeelSheetTemplatedMatrixImpl implements KeelSheetTemplatedMatrix {
      * @since 5.0.0
      */
     @Override
-    public KeelSheetTemplatedMatrix addRawRow(@NotNull List<String> rawRow) {
+    public KeelSheetTemplatedMatrix addRawRow(List<String> rawRow) {
         this.rawRows.add(rawRow);
         //this.templatedRows.add(KeelSheetMatrixTemplatedRow.create(getTemplate(), rawRow));
         return this;

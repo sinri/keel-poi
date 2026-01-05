@@ -5,7 +5,7 @@ import org.apache.poi.hssf.usermodel.HSSFPicture;
 import org.apache.poi.hssf.usermodel.HSSFPictureData;
 import org.apache.poi.xssf.usermodel.XSSFPicture;
 import org.apache.poi.xssf.usermodel.XSSFPictureData;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 
 /**
@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class KeelPictureInSheet {
     private final int atRow;
     private final int atCol;
@@ -30,7 +31,7 @@ public class KeelPictureInSheet {
      *
      * @param xssfPicture XSSF 图片对象
      */
-    KeelPictureInSheet(@NotNull XSSFPicture xssfPicture) {
+    KeelPictureInSheet(XSSFPicture xssfPicture) {
         if (xssfPicture.getClientAnchor() != null) {
             var anchor = xssfPicture.getClientAnchor();
             atRow = anchor.getRow1() + 1; // 转换为Excel行号（从1开始）
@@ -57,7 +58,7 @@ public class KeelPictureInSheet {
      *
      * @param hssfPicture HSSF 图片对象
      */
-    KeelPictureInSheet(@NotNull HSSFPicture hssfPicture) {
+    KeelPictureInSheet(HSSFPicture hssfPicture) {
         HSSFClientAnchor anchor = hssfPicture.getClientAnchor();
         if (anchor != null) {
             atRow = anchor.getRow1() + 1; // 转换为Excel行号（从1开始）

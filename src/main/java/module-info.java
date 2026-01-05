@@ -1,8 +1,8 @@
 module io.github.sinri.keel.integration.poi {
     requires io.github.sinri.keel.core;
     requires io.vertx.core;
-    requires org.jetbrains.annotations;
     requires java.desktop;
+    requires static org.jspecify;
 
     requires org.apache.poi.poi; // Core POI functionalities (kept as code may directly use ss/usermodel)
     requires org.apache.poi.ooxml; // OOXML functionality

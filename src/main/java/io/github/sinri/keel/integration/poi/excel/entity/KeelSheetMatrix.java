@@ -1,5 +1,7 @@
 package io.github.sinri.keel.integration.poi.excel.entity;
 
+import org.jspecify.annotations.NullMarked;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,6 +15,7 @@ import java.util.function.Function;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class KeelSheetMatrix {
     private final List<String> headerRow;
     private final List<List<String>> rows;
@@ -179,24 +182,26 @@ public class KeelSheetMatrix {
             this.rows = rows;
         }
 
-        @Override
+
         /**
          * 检查迭代器是否还有下一个元素。
          *
          * @return 如果还有下一个元素则返回 true，否则返回 false
          * @since 5.0.0
          */
+        @Override
         public boolean hasNext() {
             return this.rows.size() > ptr.get();
         }
 
-        @Override
+
         /**
          * 获取迭代器的下一个元素。
          *
          * @return 下一个元素
          * @since 5.0.0
          */
+        @Override
         public R next() {
             List<String> rawRow = this.rows.get(ptr.get());
             ptr.incrementAndGet();

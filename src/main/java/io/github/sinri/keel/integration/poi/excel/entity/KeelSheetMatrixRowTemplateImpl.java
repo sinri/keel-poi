@@ -1,7 +1,7 @@
 package io.github.sinri.keel.integration.poi.excel.entity;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,6 +14,7 @@ import java.util.Objects;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class KeelSheetMatrixRowTemplateImpl implements KeelSheetMatrixRowTemplate {
     private final List<String> headerRow;
     private final Map<String, Integer> headerMap;
@@ -25,7 +26,7 @@ public class KeelSheetMatrixRowTemplateImpl implements KeelSheetMatrixRowTemplat
      * @param headerRow 表头行数据列表
      * @since 5.0.0
      */
-    KeelSheetMatrixRowTemplateImpl(@NotNull List<String> headerRow) {
+    KeelSheetMatrixRowTemplateImpl(List<String> headerRow) {
         this.headerRow = headerRow;
         this.headerMap = new LinkedHashMap<>();
         for (int i = 0; i < headerRow.size(); i++) {
@@ -40,7 +41,6 @@ public class KeelSheetMatrixRowTemplateImpl implements KeelSheetMatrixRowTemplat
      * @return 指定索引处的列名
      * @since 5.0.0
      */
-    @NotNull
     @Override
     public String getColumnName(int i) {
         return this.headerRow.get(i);
@@ -53,9 +53,9 @@ public class KeelSheetMatrixRowTemplateImpl implements KeelSheetMatrixRowTemplat
      * @return 列索引，如果未找到则返回 null
      * @since 5.0.0
      */
-    @Nullable
+
     @Override
-    public Integer getColumnIndex(String name) {
+    public @Nullable Integer getColumnIndex(String name) {
         return this.headerMap.get(name);
     }
 
@@ -65,7 +65,6 @@ public class KeelSheetMatrixRowTemplateImpl implements KeelSheetMatrixRowTemplat
      * @return 列名列表
      * @since 5.0.0
      */
-    @NotNull
     @Override
     public List<String> getColumnNames() {
         return headerRow;

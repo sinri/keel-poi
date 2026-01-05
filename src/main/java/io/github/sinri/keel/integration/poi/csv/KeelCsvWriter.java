@@ -1,8 +1,8 @@
 package io.github.sinri.keel.integration.poi.csv;
 
 import io.vertx.core.Future;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -25,13 +25,14 @@ import java.util.function.Function;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class KeelCsvWriter implements Closeable {
     private final OutputStream outputStream;
     private final AtomicBoolean atLineBeginningRef;
     private final String separator;
     private final Charset charset;
 
-    public KeelCsvWriter(@NotNull OutputStream outputStream) {
+    public KeelCsvWriter(OutputStream outputStream) {
         this(outputStream, ",", StandardCharsets.UTF_8);
     }
 
@@ -42,7 +43,7 @@ public class KeelCsvWriter implements Closeable {
      * @param separator    CSV 文件中使用的分隔符
      * @param charset      CSV 文件的字符集
      */
-    public KeelCsvWriter(@NotNull OutputStream outputStream, @NotNull String separator, @NotNull Charset charset) {
+    public KeelCsvWriter(OutputStream outputStream, String separator, Charset charset) {
         this.outputStream = outputStream;
         this.separator = separator;
         this.charset = charset;
@@ -60,12 +61,12 @@ public class KeelCsvWriter implements Closeable {
      * @return 表示操作完成的 Future
      */
     public static Future<Void> write(
-            @NotNull OutputStream outputStream,
-            @NotNull String separator,
-            @NotNull Charset charset,
-            @NotNull Function<KeelCsvWriter, Future<Void>> writeCsvFunc
+            OutputStream outputStream,
+            String separator,
+            Charset charset,
+            Function<KeelCsvWriter, Future<Void>> writeCsvFunc
     ) {
-        AtomicReference<KeelCsvWriter> ref = new AtomicReference<>();
+        AtomicReference<@Nullable KeelCsvWriter> ref = new AtomicReference<>();
         return Future.succeededFuture()
                      .compose(v -> {
                          var x = new KeelCsvWriter(outputStream, separator, charset);
@@ -74,8 +75,7 @@ public class KeelCsvWriter implements Closeable {
                      })
                      .compose(v -> {
                          KeelCsvWriter keelCsvWriter = ref.get();
-                         Objects.requireNonNull(keelCsvWriter);
-                         return writeCsvFunc.apply(ref.get());
+                         return writeCsvFunc.apply(Objects.requireNonNull(keelCsvWriter));
                      })
                      .eventually(() -> {
                          KeelCsvWriter keelCsvWriter = ref.get();
@@ -101,8 +101,8 @@ public class KeelCsvWriter implements Closeable {
      * @return 表示操作完成的 Future
      */
     public static Future<Void> write(
-            @NotNull OutputStream outputStream,
-            @NotNull Function<KeelCsvWriter, Future<Void>> writeCsvFunc
+            OutputStream outputStream,
+            Function<KeelCsvWriter, Future<Void>> writeCsvFunc
     ) {
         return write(outputStream, ",", StandardCharsets.UTF_8, writeCsvFunc);
     }
@@ -115,7 +115,7 @@ public class KeelCsvWriter implements Closeable {
      * @param cellValue 要写入的单元格值
      * @throws IOException 当写入过程中发生 IO 异常时抛出
      */
-    public void writeCell(@NotNull String cellValue) throws IOException {
+    public void writeCell(String cellValue) throws IOException {
         synchronized (atLineBeginningRef) {
             writeToOutputStream(quote(cellValue) + separator);
             atLineBeginningRef.set(false);
@@ -136,7 +136,7 @@ public class KeelCsvWriter implements Closeable {
         }
     }
 
-    private void writeToOutputStream(@NotNull String anything) throws IOException {
+    private void writeToOutputStream(String anything) throws IOException {
         outputStream.write(anything.getBytes(charset));
     }
 
@@ -148,7 +148,7 @@ public class KeelCsvWriter implements Closeable {
      * @param list 要写入的行数据列表
      * @throws IOException 当写入过程中发生 IO 异常时抛出
      */
-    public void blockWriteRow(@NotNull List<String> list) throws IOException {
+    public void blockWriteRow(List<String> list) throws IOException {
         synchronized (atLineBeginningRef) {
             if (!atLineBeginningRef.get()) {
                 writeToOutputStream("\n");

@@ -3,7 +3,7 @@ package io.github.sinri.keel.integration.poi.csv;
 import io.github.sinri.keel.tesuto.KeelJUnit5Test;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileInputStream;
@@ -19,9 +19,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@NullMarked
 class KeelCsvWriterTest extends KeelJUnit5Test {
 
-    public KeelCsvWriterTest(@NotNull Vertx vertx) {
+    public KeelCsvWriterTest(Vertx vertx) {
         super(vertx);
     }
 

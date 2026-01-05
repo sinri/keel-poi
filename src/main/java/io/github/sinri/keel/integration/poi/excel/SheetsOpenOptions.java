@@ -2,8 +2,8 @@ package io.github.sinri.keel.integration.poi.excel;
 
 import com.github.pjfanning.xlsx.StreamingReader;
 import io.vertx.core.Handler;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.io.File;
 import java.io.InputStream;
@@ -14,16 +14,14 @@ import java.util.Objects;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class SheetsOpenOptions {
     private boolean withFormulaEvaluator = false;
-    @Nullable
-    private File file = null;
-    @Nullable
-    private StreamingReader.Builder hugeXlsxStreamingReaderBuilder = null;
-    @Nullable
-    private InputStream inputStream = null;
-    @Nullable
-    private Boolean useXlsx = null;
+
+    private @Nullable File file = null;
+    private StreamingReader.@Nullable Builder hugeXlsxStreamingReaderBuilder = null;
+    private @Nullable InputStream inputStream = null;
+    private @Nullable Boolean useXlsx = null;
 
     /**
      * 配置读取超大 Excel 文件的系统参数。
@@ -69,7 +67,7 @@ public class SheetsOpenOptions {
      * @param file 要打开的 Excel 文件
      * @return 当前选项实例，支持链式调用
      */
-    public SheetsOpenOptions setFile(@NotNull File file) {
+    public SheetsOpenOptions setFile(File file) {
         this.file = file;
         return this;
     }
@@ -80,7 +78,7 @@ public class SheetsOpenOptions {
      * @param filePath 要打开的 Excel 文件路径
      * @return 当前选项实例，支持链式调用
      */
-    public SheetsOpenOptions setFile(@NotNull String filePath) {
+    public SheetsOpenOptions setFile(String filePath) {
         this.file = new File(filePath);
         return this;
     }
@@ -101,7 +99,7 @@ public class SheetsOpenOptions {
      * @param inputStream 要读取的输入流
      * @return 当前选项实例，支持链式调用
      */
-    public SheetsOpenOptions setInputStream(@NotNull InputStream inputStream) {
+    public SheetsOpenOptions setInputStream(InputStream inputStream) {
         this.inputStream = inputStream;
         return this;
     }
@@ -122,7 +120,6 @@ public class SheetsOpenOptions {
      *
      * @return 超大 XLSX 流式读取构建器
      */
-    @NotNull
     public StreamingReader.Builder getHugeXlsxStreamingReaderBuilder() {
         Objects.requireNonNull(this.hugeXlsxStreamingReaderBuilder);
         return hugeXlsxStreamingReaderBuilder;
@@ -143,7 +140,7 @@ public class SheetsOpenOptions {
      * @return 当前选项实例，支持链式调用
      * @see <a href="https://github.com/pjfanning/excel-streaming-reader">PJFANNING::ExcelStreamingReader</a>
      */
-    public SheetsOpenOptions setHugeXlsxStreamingReaderBuilder(@NotNull Handler<StreamingReader.Builder> streamingReaderBuilderHandler) {
+    public SheetsOpenOptions setHugeXlsxStreamingReaderBuilder(Handler<StreamingReader.Builder> streamingReaderBuilderHandler) {
         var hugeXlsxStreamingReaderBuilder = new StreamingReader.Builder();
 
         // number of rows to keep in memory (defaults to 10)
@@ -174,7 +171,7 @@ public class SheetsOpenOptions {
      * @param useXlsx 要设置的 XLSX 格式使用状态
      * @return 当前选项实例，支持链式调用
      */
-    public SheetsOpenOptions setUseXlsx(@NotNull Boolean useXlsx) {
+    public SheetsOpenOptions setUseXlsx(Boolean useXlsx) {
         this.useXlsx = useXlsx;
         return this;
     }

@@ -1,10 +1,13 @@
 package io.github.sinri.keel.integration.poi.excel;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * Excel 工作簿创建选项类，用于配置创建 Excel 工作簿时的参数。
  *
  * @since 5.0.0
  */
+@NullMarked
 public class SheetsCreateOptions {
     private boolean withFormulaEvaluator = false;
     private boolean useXlsx = true;

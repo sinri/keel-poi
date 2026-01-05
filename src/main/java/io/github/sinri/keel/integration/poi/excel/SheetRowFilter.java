@@ -1,6 +1,6 @@
 package io.github.sinri.keel.integration.poi.excel;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.List;
 
@@ -11,6 +11,7 @@ import java.util.List;
  *
  * @since 5.0.0
  */
+@NullMarked
 public interface SheetRowFilter {
     /**
      * 创建一个过滤器，用于过滤掉所有单元格都为空的行。
@@ -21,7 +22,7 @@ public interface SheetRowFilter {
         return rawRow -> {
             boolean allEmpty = true;
             for (String cell : rawRow) {
-                if (cell != null && !cell.isEmpty()) {
+                if (!cell.isEmpty()) {
                     allEmpty = false;
                     break;
                 }
@@ -36,7 +37,7 @@ public interface SheetRowFilter {
      * @param rawRow 原始行数据，包含该行所有单元格的内容
      * @return 如果应该过滤掉此行则返回 true，否则返回 false
      */
-    boolean shouldThrowThisRawRow(@NotNull List<String> rawRow);
+    boolean shouldThrowThisRawRow(List<String> rawRow);
 
 
 }

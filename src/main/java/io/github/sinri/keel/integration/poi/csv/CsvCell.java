@@ -2,8 +2,8 @@ package io.github.sinri.keel.integration.poi.csv;
 
 
 import io.github.sinri.keel.core.utils.value.ValueBox;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.math.BigDecimal;
 
@@ -14,6 +14,7 @@ import java.math.BigDecimal;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class CsvCell {
     private final @Nullable String string;
     private final ValueBox<BigDecimal> bigDecimalValueBox = new ValueBox<>();
@@ -107,8 +108,7 @@ public class CsvCell {
      * @param defaultValue 如果单元格值不是数字则返回的默认值
      * @return 此单元格值解析后的数字，或如果单元格值不是数字则返回默认值
      */
-    @NotNull
-    public BigDecimal getNumberOrElse(@NotNull BigDecimal defaultValue) {
+    public BigDecimal getNumberOrElse(BigDecimal defaultValue) {
         try {
 
             var x = getNumber();

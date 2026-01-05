@@ -1,6 +1,6 @@
 package io.github.sinri.keel.integration.poi.excel.entity;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.List;
 
@@ -10,6 +10,7 @@ import java.util.List;
  *
  * @since 5.0.0
  */
+@NullMarked
 public interface KeelSheetTemplatedMatrix {
     /**
      * 创建模板化矩阵实例。
@@ -18,7 +19,7 @@ public interface KeelSheetTemplatedMatrix {
      * @return 模板化矩阵实例
      * @since 5.0.0
      */
-    static KeelSheetTemplatedMatrix create(@NotNull KeelSheetMatrixRowTemplate template) {
+    static KeelSheetTemplatedMatrix create(KeelSheetMatrixRowTemplate template) {
         return new KeelSheetTemplatedMatrixImpl(template);
     }
 
@@ -62,7 +63,7 @@ public interface KeelSheetTemplatedMatrix {
      * @return 当前模板化矩阵实例，支持链式调用
      * @since 5.0.0
      */
-    KeelSheetTemplatedMatrix addRawRow(@NotNull List<String> rawRow);
+    KeelSheetTemplatedMatrix addRawRow(List<String> rawRow);
 
     /**
      * 添加多个原始行数据。
@@ -71,7 +72,7 @@ public interface KeelSheetTemplatedMatrix {
      * @return 当前模板化矩阵实例，支持链式调用
      * @since 5.0.0
      */
-    default KeelSheetTemplatedMatrix addRawRows(@NotNull List<List<String>> rawRows) {
+    default KeelSheetTemplatedMatrix addRawRows(List<List<String>> rawRows) {
         rawRows.forEach(this::addRawRow);
         return this;
     }

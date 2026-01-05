@@ -1,7 +1,7 @@
 package io.github.sinri.keel.integration.poi.excel.entity;
 
 import io.vertx.core.json.JsonObject;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.List;
 
@@ -11,6 +11,7 @@ import java.util.List;
  *
  * @since 5.0.0
  */
+@NullMarked
 public interface KeelSheetMatrixTemplatedRow {
     /**
      * 创建模板化行实例。
@@ -20,7 +21,7 @@ public interface KeelSheetMatrixTemplatedRow {
      * @return 模板化行实例
      * @since 5.0.0
      */
-    static KeelSheetMatrixTemplatedRow create(@NotNull KeelSheetMatrixRowTemplate template, @NotNull List<String> rawRow) {
+    static KeelSheetMatrixTemplatedRow create(KeelSheetMatrixRowTemplate template, List<String> rawRow) {
         return new KeelSheetMatrixTemplatedRowImpl(template, rawRow);
     }
 

@@ -20,6 +20,7 @@ val developerOrganization: String by project
 val developerOrganizationUrl: String by project
 
 // Dependency versions
+val jspecifyVersion: String by project
 val vertxVersion: String by project
 val keelCoreVersion: String by project
 val keelTestVersion: String by project
@@ -52,9 +53,13 @@ dependencies {
     // Excel streaming reader (from pom.xml)
     api("com.github.pjfanning:excel-streaming-reader:$excelStreamingReaderVersion")
 
+    // API dependency (transitive)
+    // https://mvnrepository.com/artifact/org.jspecify/jspecify
+    compileOnly("org.jspecify:jspecify:${jspecifyVersion}")
+    testCompileOnly("org.jspecify:jspecify:${jspecifyVersion}")
+
     // Test dependencies (from pom.xml)
     testImplementation("io.github.sinri:keel-test:$keelTestVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -138,26 +143,16 @@ publishing {
     }
 
     repositories {
-        // Internal Nexus repositories
         maven {
-            name = "Internal"
-            url = if (version.toString().endsWith("SNAPSHOT")) {
-                uri(findProperty("internalNexusSnapshotsUrl") as String)
-            } else {
-                uri(findProperty("internalNexusReleasesUrl") as String)
-            }
-            credentials {
-                username = findProperty("internalNexusUsername") as String
-                password = findProperty("internalNexusPassword") as String
-            }
-        }
-
-        // Maven Central (OSSRH)
-        maven {
-            name = "Release"
-
+            // name = "mixed"
             if (version.toString().endsWith("SNAPSHOT")) {
                 url = uri(findProperty("internalNexusSnapshotsUrl") as String)
+                credentials {
+                    username = findProperty("internalNexusUsername") as String
+                    password = findProperty("internalNexusPassword") as String
+                }
+            } else if (version.toString().contains(Regex("-[A-Za-z]+"))) {
+                url = uri(findProperty("internalNexusReleasesUrl") as String)
                 credentials {
                     username = findProperty("internalNexusUsername") as String
                     password = findProperty("internalNexusPassword") as String
@@ -169,30 +164,17 @@ publishing {
                     password = findProperty("ossrhPassword") as String? ?: System.getenv("OSSRH_PASSWORD")
                 }
             }
-
         }
     }
 }
 
 // Signing configuration
 signing {
+    // Use GnuPG command for signing (configured in gradle.properties)
+    useGpgCmd()
     // Only sign if not a SNAPSHOT and signing credentials are available
     setRequired({
         !version.toString().endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("publish")
     })
     sign(publishing.publications["mavenJava"])
 }
-
-// Custom tasks for publishing to specific repositories
-tasks.register("publishToInternal") {
-    group = "publishing"
-    description = "Publish to internal Nexus repository"
-    dependsOn("publishMavenJavaPublicationToInternalRepository")
-}
-
-tasks.register("publishToRelease") {
-    group = "publishing"
-    description = "Publish to Maven Central (OSSRH)"
-    dependsOn("publishMavenJavaPublicationToReleaseRepository")
-}
-

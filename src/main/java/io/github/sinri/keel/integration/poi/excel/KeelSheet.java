@@ -5,8 +5,8 @@ import io.github.sinri.keel.core.utils.value.ValueBox;
 import io.github.sinri.keel.integration.poi.excel.entity.*;
 import io.vertx.core.Future;
 import org.apache.poi.ss.usermodel.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -25,8 +25,8 @@ import java.util.function.Function;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class KeelSheet {
-    @NotNull
     private final Sheet sheet;
     /**
      * 公式求值器值盒子，用于存储公式求值器实例。
@@ -34,25 +34,25 @@ public class KeelSheet {
      * 公式求值器用于处理工作表中的公式单元格。
      *
      */
-    private final @NotNull ValueBox<FormulaEvaluator> formulaEvaluatorBox;
+    private final ValueBox<FormulaEvaluator> formulaEvaluatorBox;
 
 
     /**
      * 工作表读取器类型，用于标识工作表的读取方式。
      * 在写入模式下此字段为 null。
      */
-    @Nullable
-    protected KeelSheetsReaderType sheetsReaderType;
+
+    protected @Nullable KeelSheetsReaderType sheetsReaderType;
 
     /**
      * 使用指定的工作表读取器类型和 POI 工作表实例加载工作表，不使用公式求值器。
      * <p>
-     *     即，公式单元格将被解析为字符串形式。
+     * 即，公式单元格将被解析为字符串形式。
      *
      * @param sheetsReaderType 工作表读取器类型
      * @param sheet            POI 工作表实例
      */
-    KeelSheet(@Nullable KeelSheetsReaderType sheetsReaderType, @NotNull Sheet sheet) {
+    KeelSheet(@Nullable KeelSheetsReaderType sheetsReaderType, Sheet sheet) {
         this(sheetsReaderType, sheet, new ValueBox<>());
     }
 
@@ -63,7 +63,7 @@ public class KeelSheet {
      * @param sheet               POI 工作表实例
      * @param formulaEvaluatorBox 公式求值器值盒子
      */
-    KeelSheet(@Nullable KeelSheetsReaderType sheetsReaderType, @NotNull Sheet sheet, @NotNull ValueBox<FormulaEvaluator> formulaEvaluatorBox) {
+    KeelSheet(@Nullable KeelSheetsReaderType sheetsReaderType, Sheet sheet, ValueBox<FormulaEvaluator> formulaEvaluatorBox) {
         this.sheetsReaderType = sheetsReaderType;
         this.sheet = sheet;
         this.formulaEvaluatorBox = formulaEvaluatorBox;
@@ -102,10 +102,9 @@ public class KeelSheet {
      * @param formulaEvaluatorBox 公式求值器值盒子
      * @return 单元格内容的字符串表示
      */
-    @NotNull
     public static String dumpCellToString(
             @Nullable Cell cell,
-            @NotNull ValueBox<FormulaEvaluator> formulaEvaluatorBox
+            ValueBox<FormulaEvaluator> formulaEvaluatorBox
     ) {
         if (cell == null) return "";
         CellType cellType = cell.getCellType();
@@ -117,7 +116,6 @@ public class KeelSheet {
             if (formulaEvaluatorBox.isValueAlreadySet()) {
                 CellType formulaResultType;
 
-                @Nullable
                 FormulaEvaluator formulaEvaluator = formulaEvaluatorBox.getValue();
 
                 if (formulaEvaluator == null) {
@@ -151,15 +149,15 @@ public class KeelSheet {
      * @return 原始行数据列表，如果行被过滤器丢弃则返回 null
      */
     public static @Nullable List<String> dumpRowToRawRow(
-            @NotNull Row row,
+            Row row,
             int maxColumns,
             @Nullable SheetRowFilter sheetRowFilter,
-            @NotNull ValueBox<FormulaEvaluator> formulaEvaluatorBox
+            ValueBox<FormulaEvaluator> formulaEvaluatorBox
     ) {
         List<String> rowDatum = new ArrayList<>();
 
         for (int i = 0; i < maxColumns; i++) {
-            @Nullable Cell cell = row.getCell(i, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+            Cell cell = row.getCell(i, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
             String s = dumpCellToString(cell, formulaEvaluatorBox);
             rowDatum.add(s);
         }
@@ -178,8 +176,8 @@ public class KeelSheet {
      *
      * @return 工作表读取器类型，可能为 null
      */
-    @Nullable
-    public KeelSheetsReaderType getSheetsReaderType() {
+
+    public @Nullable KeelSheetsReaderType getSheetsReaderType() {
         return sheetsReaderType;
     }
 
@@ -208,7 +206,6 @@ public class KeelSheet {
      *
      * @return 从工作表中读取的 {@link KeelPictureInSheet} 图片对象列表
      */
-    @NotNull
     public List<KeelPictureInSheet> getPictures() {
         return getDrawing().getPictures();
     }
@@ -249,7 +246,7 @@ public class KeelSheet {
      * @param sheetRowFilter 工作表行过滤器（可选）
      * @return 原始行数据列表
      */
-    public List<String> readRawRow(int i, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
+    public @Nullable List<String> readRawRow(int i, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
         var row = readRow(i);
         return dumpRowToRawRow(row, maxColumns, sheetRowFilter, this.formulaEvaluatorBox);
     }
@@ -270,7 +267,7 @@ public class KeelSheet {
             }
 
             @Override
-            public List<String> next() {
+            public @Nullable List<String> next() {
                 Row row = rowIterator.next();
                 return dumpRowToRawRow(row, maxColumns, sheetRowFilter, formulaEvaluatorBox);
             }
@@ -282,7 +279,7 @@ public class KeelSheet {
      *
      * @param rowConsumer 行消费者，用于处理每一行数据
      */
-    public final void readAllRows(@NotNull Consumer<Row> rowConsumer) {
+    public final void readAllRows(Consumer<Row> rowConsumer) {
         Iterator<Row> it = getRowIterator();
 
         while (it.hasNext()) {
@@ -296,7 +293,7 @@ public class KeelSheet {
      *
      * @return 原始的 Apache POI 工作表实例
      */
-    public @NotNull Sheet getSheet() {
+    public Sheet getSheet() {
         return sheet;
     }
 
@@ -378,7 +375,7 @@ public class KeelSheet {
         }
 
         AtomicInteger rowIndex = new AtomicInteger(0);
-        AtomicReference<KeelSheetTemplatedMatrix> templatedMatrixRef = new AtomicReference<>();
+        AtomicReference<@Nullable KeelSheetTemplatedMatrix> templatedMatrixRef = new AtomicReference<>();
 
 
         readAllRows(row -> {
@@ -396,12 +393,14 @@ public class KeelSheet {
             } else if (currentRowIndex > headerRowIndex) {
                 var rowDatum = dumpRowToRawRow(row, checkColumnsRef.get(), sheetRowFilter, formulaEvaluatorBox);
                 if (rowDatum != null) {
-                    templatedMatrixRef.get().addRawRow(rowDatum);
+                    var r = templatedMatrixRef.get();
+                    Objects.requireNonNull(r).addRawRow(rowDatum);
                 }
             }
             rowIndex.incrementAndGet();
         });
-        return templatedMatrixRef.get();
+        var r = templatedMatrixRef.get();
+        return Objects.requireNonNull(r);
     }
 
     /**
@@ -412,7 +411,7 @@ public class KeelSheet {
      * @param rowFunc 行处理函数，用于处理每一行数据
      * @return 表示操作完成的 Future
      */
-    public final Future<Void> readAllRowsAsync(@NotNull Keel keel, @NotNull Function<Row, Future<Void>> rowFunc) {
+    public final Future<Void> readAllRowsAsync(Keel keel, Function<Row, Future<Void>> rowFunc) {
         return keel.asyncCallIteratively(getRowIterator(), rowFunc);
     }
 
@@ -424,7 +423,7 @@ public class KeelSheet {
      * @param batchSize 批次大小
      * @return 表示操作完成的 Future
      */
-    public final Future<Void> readAllRowsAsync(@NotNull Keel keel, @NotNull Function<List<Row>, Future<Void>> rowsFunc, int batchSize) {
+    public final Future<Void> readAllRowsAsync(Keel keel, Function<List<Row>, Future<Void>> rowsFunc, int batchSize) {
         return keel.asyncCallIteratively(
                 getRowIterator(),
                 rowsFunc,
@@ -437,7 +436,7 @@ public class KeelSheet {
      *
      * @return 表示矩阵读取完成的 Future
      */
-    public final Future<KeelSheetMatrix> readAllRowsToMatrixAsync(@NotNull Keel keel) {
+    public final Future<KeelSheetMatrix> readAllRowsToMatrixAsync(Keel keel) {
         return readAllRowsToMatrixAsync(keel, 0, 0, SheetRowFilter.toThrowEmptyRows());
     }
 
@@ -449,7 +448,7 @@ public class KeelSheet {
      * @param sheetRowFilter 工作表行过滤器（可选）
      * @return 表示矩阵读取完成的 Future
      */
-    public final Future<KeelSheetMatrix> readAllRowsToMatrixAsync(@NotNull Keel keel, int headerRowIndex, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
+    public final Future<KeelSheetMatrix> readAllRowsToMatrixAsync(Keel keel, int headerRowIndex, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
         if (headerRowIndex < 0) throw new IllegalArgumentException("headerRowIndex less than zero");
 
         AtomicInteger checkColumnsRef = new AtomicInteger();
@@ -490,7 +489,7 @@ public class KeelSheet {
      *
      * @return 表示模板化矩阵读取完成的 Future
      */
-    public final Future<KeelSheetTemplatedMatrix> readAllRowsToTemplatedMatrixAsync(@NotNull Keel keel) {
+    public final Future<KeelSheetTemplatedMatrix> readAllRowsToTemplatedMatrixAsync(Keel keel) {
         return readAllRowsToTemplatedMatrixAsync(keel, 0, 0, SheetRowFilter.toThrowEmptyRows());
     }
 
@@ -502,7 +501,7 @@ public class KeelSheet {
      * @param sheetRowFilter 工作表行过滤器（可选）
      * @return 表示模板化矩阵读取完成的 Future
      */
-    public final Future<KeelSheetTemplatedMatrix> readAllRowsToTemplatedMatrixAsync(@NotNull Keel keel, int headerRowIndex, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
+    public final Future<KeelSheetTemplatedMatrix> readAllRowsToTemplatedMatrixAsync(Keel keel, int headerRowIndex, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
         if (headerRowIndex < 0) throw new IllegalArgumentException("headerRowIndex less than zero");
 
         AtomicInteger checkColumnsRef = new AtomicInteger();
@@ -511,7 +510,7 @@ public class KeelSheet {
         }
 
         AtomicInteger rowIndex = new AtomicInteger(0);
-        AtomicReference<KeelSheetTemplatedMatrix> templatedMatrixRef = new AtomicReference<>();
+        AtomicReference<@Nullable KeelSheetTemplatedMatrix> templatedMatrixRef = new AtomicReference<>();
 
         return readAllRowsAsync(keel, rows -> {
             rows.forEach(row -> {
@@ -529,16 +528,20 @@ public class KeelSheet {
                     KeelSheetTemplatedMatrix templatedMatrix = KeelSheetTemplatedMatrix.create(rowTemplate);
                     templatedMatrixRef.set(templatedMatrix);
                 } else if (currentRowIndex > headerRowIndex) {
-                    var rowDatum = dumpRowToRawRow(row, checkColumnsRef.get(), sheetRowFilter, formulaEvaluatorBox);
+                    List<String> rowDatum = dumpRowToRawRow(row, checkColumnsRef.get(), sheetRowFilter, formulaEvaluatorBox);
                     if (rowDatum != null) {
-                        templatedMatrixRef.get().addRawRow(rowDatum);
+                        KeelSheetTemplatedMatrix matrix = templatedMatrixRef.get();
+                        Objects.requireNonNull(matrix).addRawRow(rowDatum);
                     }
                 }
                 rowIndex.incrementAndGet();
             });
             return Future.succeededFuture();
         }, 1000)
-                .compose(v -> Future.succeededFuture(templatedMatrixRef.get()));
+                .compose(v -> {
+                    KeelSheetTemplatedMatrix r = templatedMatrixRef.get();
+                    return Future.succeededFuture(Objects.requireNonNull(r));
+                });
     }
 
 
@@ -549,7 +552,7 @@ public class KeelSheet {
      * @param sinceRowIndex  起始行索引
      * @param sinceCellIndex 起始单元格索引
      */
-    public void writeAllRows(@NotNull List<List<String>> rowData, int sinceRowIndex, int sinceCellIndex) {
+    public void writeAllRows(List<List<String>> rowData, int sinceRowIndex, int sinceCellIndex) {
         for (int rowIndex = 0; rowIndex < rowData.size(); rowIndex++) {
             Row row = sheet.getRow(sinceRowIndex + rowIndex);
             if (row == null) {
@@ -565,7 +568,7 @@ public class KeelSheet {
      *
      * @param rowData 行数据列表
      */
-    public void writeAllRows(@NotNull List<List<String>> rowData) {
+    public void writeAllRows(List<List<String>> rowData) {
         writeAllRows(rowData, 0, 0);
     }
 
@@ -575,7 +578,7 @@ public class KeelSheet {
      *
      * @param matrix 矩阵数据
      */
-    public void writeMatrix(@NotNull KeelSheetMatrix matrix) {
+    public void writeMatrix(KeelSheetMatrix matrix) {
         if (matrix.getHeaderRow().isEmpty()) {
             writeAllRows(matrix.getRawRowList(), 0, 0);
         } else {
@@ -591,7 +594,7 @@ public class KeelSheet {
      * @param matrix 矩阵数据
      * @return 表示写入操作完成的 Future
      */
-    public Future<Void> writeMatrixAsync(@NotNull Keel keel, @NotNull KeelSheetMatrix matrix) {
+    public Future<Void> writeMatrixAsync(Keel keel, KeelSheetMatrix matrix) {
         AtomicInteger rowIndexRef = new AtomicInteger(0);
         if (!matrix.getHeaderRow().isEmpty()) {
             writeAllRows(List.of(matrix.getHeaderRow()), 0, 0);
@@ -611,7 +614,7 @@ public class KeelSheet {
      *
      * @param templatedMatrix 模板化矩阵数据
      */
-    public void writeTemplatedMatrix(@NotNull KeelSheetTemplatedMatrix templatedMatrix) {
+    public void writeTemplatedMatrix(KeelSheetTemplatedMatrix templatedMatrix) {
         AtomicInteger rowIndexRef = new AtomicInteger(0);
         writeAllRows(List.of(templatedMatrix.getTemplate().getColumnNames()), 0, 0);
         rowIndexRef.incrementAndGet();
@@ -626,7 +629,7 @@ public class KeelSheet {
      * @param templatedMatrix 模板化矩阵数据
      * @return 表示写入操作完成的 Future
      */
-    public Future<Void> writeTemplatedMatrixAsync(@NotNull Keel keel, @NotNull KeelSheetTemplatedMatrix templatedMatrix) {
+    public Future<Void> writeTemplatedMatrixAsync(Keel keel, KeelSheetTemplatedMatrix templatedMatrix) {
         AtomicInteger rowIndexRef = new AtomicInteger(0);
         writeAllRows(List.of(templatedMatrix.getTemplate().getColumnNames()), 0, 0);
         rowIndexRef.incrementAndGet();
@@ -686,7 +689,7 @@ public class KeelSheet {
      * @return 模板化矩阵行迭代器
      */
     public Iterator<KeelSheetMatrixTemplatedRow> getTemplatedMatrixRowIterator(
-            @NotNull KeelSheetMatrixRowTemplate template,
+            KeelSheetMatrixRowTemplate template,
             int maxColumns,
             @Nullable SheetRowFilter sheetRowFilter
     ) {

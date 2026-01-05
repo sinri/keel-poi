@@ -3,7 +3,7 @@ package io.github.sinri.keel.integration.poi.csv;
 import io.github.sinri.keel.tesuto.KeelJUnit5Test;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileInputStream;
@@ -13,9 +13,10 @@ import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@NullMarked
 class KeelCsvReaderTest extends KeelJUnit5Test {
 
-    public KeelCsvReaderTest(@NotNull Vertx vertx) {
+    public KeelCsvReaderTest(Vertx vertx) {
         super(vertx);
     }
 

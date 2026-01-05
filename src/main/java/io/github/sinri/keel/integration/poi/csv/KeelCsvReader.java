@@ -1,8 +1,8 @@
 package io.github.sinri.keel.integration.poi.csv;
 
 import io.vertx.core.Future;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -20,6 +20,7 @@ import java.util.function.Function;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class KeelCsvReader implements Closeable {
     private final BufferedReader br;
     private final String separator;
@@ -30,12 +31,12 @@ public class KeelCsvReader implements Closeable {
      * @param br        用于读取 CSV 数据的 BufferedReader
      * @param separator CSV 文件中使用的分隔符
      */
-    public KeelCsvReader(@NotNull BufferedReader br, @NotNull String separator) {
+    public KeelCsvReader(BufferedReader br, String separator) {
         this.br = br;
         this.separator = separator;
     }
 
-    public KeelCsvReader(@NotNull InputStream inputStream, Charset charset) {
+    public KeelCsvReader(InputStream inputStream, Charset charset) {
         this(inputStream, charset, ",");
     }
 
@@ -46,11 +47,11 @@ public class KeelCsvReader implements Closeable {
      * @param charset     CSV 文件的字符集
      * @param separator   CSV 文件中使用的分隔符
      */
-    public KeelCsvReader(@NotNull InputStream inputStream, @NotNull Charset charset, @NotNull String separator) {
+    public KeelCsvReader(InputStream inputStream, Charset charset, String separator) {
         this(new BufferedReader(new InputStreamReader(inputStream, charset)), separator);
     }
 
-    public KeelCsvReader(@NotNull BufferedReader br) {
+    public KeelCsvReader(BufferedReader br) {
         this(br, ",");
     }
 
@@ -65,10 +66,10 @@ public class KeelCsvReader implements Closeable {
      * @return 表示操作完成的 Future
      */
     public static Future<Void> read(
-            @NotNull InputStream inputStream, @NotNull Charset charset, @NotNull String separator,
-            @NotNull Function<KeelCsvReader, Future<Void>> readFunc
+            InputStream inputStream, Charset charset, String separator,
+            Function<KeelCsvReader, Future<Void>> readFunc
     ) {
-        AtomicReference<KeelCsvReader> ref = new AtomicReference<>();
+        AtomicReference<@Nullable KeelCsvReader> ref = new AtomicReference<>();
         return Future.succeededFuture()
                      .compose(v -> {
                          KeelCsvReader keelCsvReader = new KeelCsvReader(inputStream, charset, separator);
@@ -102,8 +103,7 @@ public class KeelCsvReader implements Closeable {
      * @return 解析后的 CSV 行对象，如果没有更多行则返回 null
      * @throws IOException 当 CSV 源发生 IO 异常时抛出
      */
-    @Nullable
-    public CsvRow next() throws IOException {
+    public @Nullable CsvRow next() throws IOException {
         String line = br.readLine();
         if (line == null) return null;
         return consumeOneLine(null, null, 0, line);
@@ -120,7 +120,7 @@ public class KeelCsvReader implements Closeable {
      * @param line       the raw text of the line
      * @return the parsed row instance; may be incompleted during recursion.
      */
-    private CsvRow consumeOneLine(@Nullable CsvRow row, @Nullable StringBuilder buffer, int quoterFlag, @NotNull String line) throws IOException {
+    private CsvRow consumeOneLine(@Nullable CsvRow row, @Nullable StringBuilder buffer, int quoterFlag, String line) throws IOException {
         if (row == null) {
             row = new CsvRow();
         }
@@ -180,6 +180,6 @@ public class KeelCsvReader implements Closeable {
      */
     @Override
     public void close() throws IOException {
-        if (br != null) br.close();
+        br.close();
     }
 }

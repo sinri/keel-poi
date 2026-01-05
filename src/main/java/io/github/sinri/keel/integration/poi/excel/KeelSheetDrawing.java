@@ -7,8 +7,8 @@ import org.apache.poi.hssf.usermodel.HSSFShape;
 import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import org.apache.poi.xssf.usermodel.XSSFPicture;
 import org.apache.poi.xssf.usermodel.XSSFShape;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,10 +21,9 @@ import java.util.stream.Collectors;
  *
  * @since 5.0.0
  */
+@NullMarked
 class KeelSheetDrawing {
-    @NotNull
     private final ValueBox<XSSFDrawing> drawingForXlsxValueBox = new ValueBox<>();
-    @NotNull
     private final ValueBox<HSSFPatriarch> drawingForXlsValueBox = new ValueBox<>();
 
 
@@ -34,7 +33,7 @@ class KeelSheetDrawing {
      *
      * @param keelSheet 工作表实例
      */
-    public KeelSheetDrawing(@NotNull KeelSheet keelSheet) {
+    public KeelSheetDrawing(KeelSheet keelSheet) {
         drawingForXlsxValueBox.setValue(null);
         drawingForXlsValueBox.setValue(null);
         if (keelSheet.getSheetsReaderType() == KeelSheetsReaderType.XLSX) {
@@ -60,7 +59,6 @@ class KeelSheetDrawing {
      *
      * @return 工作表中的图片列表
      */
-    @NotNull
     public List<KeelPictureInSheet> getPictures() {
         List<KeelPictureInSheet> list = new ArrayList<>();
 
@@ -81,20 +79,20 @@ class KeelSheetDrawing {
         return list;
     }
 
-    @Nullable
-    private XSSFDrawing getDrawingForXlsx() {
+
+    private @Nullable XSSFDrawing getDrawingForXlsx() {
         return drawingForXlsxValueBox.getValue();
     }
 
-    @Nullable
-    private List<XSSFShape> getShapesForXlsx() {
+
+    private @Nullable List<XSSFShape> getShapesForXlsx() {
         XSSFDrawing xlsxDrawing = getDrawingForXlsx();
         if (xlsxDrawing == null) return null;
         return xlsxDrawing.getShapes();
     }
 
-    @Nullable
-    private List<XSSFPicture> getPicturesForXlsx() {
+
+    private @Nullable List<XSSFPicture> getPicturesForXlsx() {
         List<XSSFShape> xlsxShapes = getShapesForXlsx();
         if (xlsxShapes == null) return null;
         return xlsxShapes.stream()
@@ -103,20 +101,20 @@ class KeelSheetDrawing {
                          .collect(Collectors.toList());
     }
 
-    @Nullable
-    private HSSFPatriarch getDrawingForXls() {
+
+    private @Nullable HSSFPatriarch getDrawingForXls() {
         return drawingForXlsValueBox.getValue();
     }
 
-    @Nullable
-    private List<org.apache.poi.hssf.usermodel.HSSFShape> getShapesForXls() {
+
+    private @Nullable List<org.apache.poi.hssf.usermodel.HSSFShape> getShapesForXls() {
         HSSFPatriarch drawing = getDrawingForXls();
         if (drawing == null) return null;
         return drawing.getChildren();
     }
 
-    @Nullable
-    private List<HSSFPicture> getPicturesForXls() {
+
+    private @Nullable List<HSSFPicture> getPicturesForXls() {
         List<HSSFShape> shapesForXls = getShapesForXls();
         if (shapesForXls == null) return null;
         return shapesForXls.stream()

@@ -1,7 +1,7 @@
 package io.github.sinri.keel.integration.poi.excel.entity;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -11,6 +11,7 @@ import java.util.List;
  *
  * @since 5.0.0
  */
+@NullMarked
 public interface KeelSheetMatrixRowTemplate {
     /**
      * 创建行模板实例。
@@ -19,7 +20,7 @@ public interface KeelSheetMatrixRowTemplate {
      * @return 行模板实例
      * @since 5.0.0
      */
-    static KeelSheetMatrixRowTemplate create(@NotNull List<String> headerRow) {
+    static KeelSheetMatrixRowTemplate create(List<String> headerRow) {
         return new KeelSheetMatrixRowTemplateImpl(headerRow);
     }
 
@@ -31,7 +32,6 @@ public interface KeelSheetMatrixRowTemplate {
      * @throws RuntimeException 如果索引超出范围
      * @since 5.0.0
      */
-    @NotNull
     String getColumnName(int i);
 
     /**
@@ -41,8 +41,7 @@ public interface KeelSheetMatrixRowTemplate {
      * @return 给定列名的第一个匹配索引（或按自定义逻辑），如果未找到则返回 null
      * @since 5.0.0
      */
-    @Nullable
-    Integer getColumnIndex(String name);
+    @Nullable Integer getColumnIndex(String name);
 
     /**
      * 获取所有列名列表。
@@ -50,6 +49,5 @@ public interface KeelSheetMatrixRowTemplate {
      * @return 列名列表
      * @since 5.0.0
      */
-    @NotNull
     List<String> getColumnNames();
 }

@@ -1,7 +1,8 @@
 package io.github.sinri.keel.integration.poi.excel.entity;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class KeelSheetMatrixRow {
     private final List<String> rawRow;
 
@@ -32,7 +34,6 @@ public class KeelSheetMatrixRow {
      * @return 指定索引处的单元格值
      * @since 5.0.0
      */
-    @NotNull
     public String readValue(int i) {
         return rawRow.get(i);
     }
@@ -67,15 +68,15 @@ public class KeelSheetMatrixRow {
      * @return 转换后的整数值，如果转换失败则返回 null
      * @since 5.0.0
      */
-    @Nullable
-    public Integer readValueToInteger(int i) {
+
+    public @Nullable Integer readValueToInteger(int i) {
         try {
             return readValueToBigDecimal(i).intValueExact();
         } catch (ArithmeticException arithmeticException) {
             return null;
         }
-//        double v = readValueToDouble(i);
-//        return (int) v;
+        //        double v = readValueToDouble(i);
+        //        return (int) v;
     }
 
     /**
@@ -86,15 +87,15 @@ public class KeelSheetMatrixRow {
      * @return 转换后的长整数值，如果转换失败则返回 null
      * @since 5.0.0
      */
-    @Nullable
-    public Long readValueToLong(int i) {
+
+    public @Nullable Long readValueToLong(int i) {
         try {
             return readValueToBigDecimal(i).longValueExact();
         } catch (ArithmeticException arithmeticException) {
             return null;
         }
-//        double v = readValueToDouble(i);
-//        return (long) v;
+        //        double v = readValueToDouble(i);
+        //        return (long) v;
     }
 
     /**
@@ -106,6 +107,6 @@ public class KeelSheetMatrixRow {
      */
     public double readValueToDouble(int i) {
         return readValueToBigDecimal(i).doubleValue();
-//        return Double.parseDouble(readValue(i));
+        //        return Double.parseDouble(readValue(i));
     }
 }

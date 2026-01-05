@@ -1,6 +1,6 @@
 package io.github.sinri.keel.integration.poi.csv;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +10,7 @@ import java.util.List;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class CsvRow {
     private final List<CsvCell> cells = new ArrayList<>();
 
@@ -19,7 +20,7 @@ public class CsvRow {
      * @param cell 要添加的 CSV 单元格
      * @return 当前 CSV 行对象，支持链式调用
      */
-    public CsvRow addCell(@NotNull CsvCell cell) {
+    public CsvRow addCell(CsvCell cell) {
         this.cells.add(cell);
         return this;
     }
@@ -30,7 +31,6 @@ public class CsvRow {
      * @param i 单元格的索引
      * @return 指定索引处的 CSV 单元格
      */
-    @NotNull
     public CsvCell getCell(int i) {
         return cells.get(i);
     }

@@ -13,8 +13,8 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.io.*;
 import java.util.Objects;
@@ -27,6 +27,7 @@ import java.util.function.Function;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class KeelSheets implements Closeable {
     /**
      * 公式求值器，用于计算 Excel 公式单元格的值。
@@ -35,12 +36,11 @@ public class KeelSheets implements Closeable {
      * @since 5.0.0
      */
     private final @Nullable FormulaEvaluator formulaEvaluator;
-    protected @NotNull Workbook autoWorkbook;
+    protected Workbook autoWorkbook;
     /**
-     * This field is null for write mode.
+     * This field is null for `write` mode.
      */
-    @Nullable
-    protected KeelSheetsReaderType sheetsReaderType;
+    protected @Nullable KeelSheetsReaderType sheetsReaderType;
 
     /**
      * 受保护的构造函数，使用指定的工作表读取器类型和工作簿实例创建工作簿实例。
@@ -49,7 +49,7 @@ public class KeelSheets implements Closeable {
      * @param workbook         工作簿实例
      * @since 5.0.0
      */
-    protected KeelSheets(@Nullable KeelSheetsReaderType sheetsReaderType, @NotNull Workbook workbook) {
+    protected KeelSheets(@Nullable KeelSheetsReaderType sheetsReaderType, Workbook workbook) {
         this(sheetsReaderType, workbook, false);
     }
 
@@ -86,8 +86,7 @@ public class KeelSheets implements Closeable {
      * @param usage             使用工作簿的函数
      * @return 表示操作完成的 Future
      */
-    public static <T> Future<T> useSheets(@NotNull SheetsOpenOptions sheetsOpenOptions,
-                                          @NotNull Function<KeelSheets, Future<T>> usage) {
+    public static <T> Future<T> useSheets(SheetsOpenOptions sheetsOpenOptions, Function<KeelSheets, Future<T>> usage) {
         return Future.succeededFuture()
                      .compose(v -> {
                          try {
@@ -179,8 +178,7 @@ public class KeelSheets implements Closeable {
      * @param usage               使用工作簿的函数
      * @return 表示操作完成的 Future
      */
-    public static <T> Future<T> useSheets(@NotNull SheetsCreateOptions sheetsCreateOptions,
-                                          @NotNull Function<KeelSheets, Future<T>> usage) {
+    public static <T> Future<T> useSheets(SheetsCreateOptions sheetsCreateOptions, Function<KeelSheets, Future<T>> usage) {
         return Future.succeededFuture()
                      .compose(v -> {
                          KeelSheets keelSheets;
@@ -211,7 +209,7 @@ public class KeelSheets implements Closeable {
      * @param sheetName 工作表名称
      * @return 工作表读取器
      */
-    public KeelSheet generateReaderForSheet(@NotNull String sheetName) {
+    public KeelSheet generateReaderForSheet(String sheetName) {
         return this.generateReaderForSheet(sheetName, true);
     }
 
@@ -222,7 +220,7 @@ public class KeelSheets implements Closeable {
      * @param parseFormulaCellToValue 是否将公式单元格解析为值
      * @return 工作表读取器
      */
-    public KeelSheet generateReaderForSheet(@NotNull String sheetName, boolean parseFormulaCellToValue) {
+    public KeelSheet generateReaderForSheet(String sheetName, boolean parseFormulaCellToValue) {
         var sheet = this.getWorkbook().getSheet(sheetName);
         ValueBox<FormulaEvaluator> formulaEvaluatorValueBox = new ValueBox<>();
         if (parseFormulaCellToValue) {
@@ -264,7 +262,7 @@ public class KeelSheets implements Closeable {
      * @param pos       工作表位置，如果为 null 则使用默认位置
      * @return 工作表写入器
      */
-    public KeelSheet generateWriterForSheet(@NotNull String sheetName, Integer pos) {
+    public KeelSheet generateWriterForSheet(String sheetName, @Nullable Integer pos) {
         Sheet sheet = this.getWorkbook().createSheet(sheetName);
         if (pos != null) {
             this.getWorkbook().setSheetOrder(sheetName, pos);
@@ -278,7 +276,7 @@ public class KeelSheets implements Closeable {
      * @param sheetName 工作表名称
      * @return 工作表写入器
      */
-    public KeelSheet generateWriterForSheet(@NotNull String sheetName) {
+    public KeelSheet generateWriterForSheet(String sheetName) {
         return generateWriterForSheet(sheetName, null);
     }
 
@@ -296,7 +294,6 @@ public class KeelSheets implements Closeable {
      *
      * @return 原始的 Apache POI 工作簿实例
      */
-    @NotNull
     public Workbook getWorkbook() {
         return autoWorkbook;
     }
