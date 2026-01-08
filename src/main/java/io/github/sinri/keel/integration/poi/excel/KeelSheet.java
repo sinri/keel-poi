@@ -1,6 +1,6 @@
 package io.github.sinri.keel.integration.poi.excel;
 
-import io.github.sinri.keel.base.Keel;
+import io.github.sinri.keel.base.async.KeelAsyncMixin;
 import io.github.sinri.keel.core.utils.value.ValueBox;
 import io.github.sinri.keel.integration.poi.excel.entity.*;
 import io.vertx.core.Future;
@@ -411,8 +411,8 @@ public class KeelSheet {
      * @param rowFunc 行处理函数，用于处理每一行数据
      * @return 表示操作完成的 Future
      */
-    public final Future<Void> readAllRowsAsync(Keel keel, Function<Row, Future<Void>> rowFunc) {
-        return keel.asyncCallIteratively(getRowIterator(), rowFunc);
+    public final Future<Void> readAllRowsAsync(KeelAsyncMixin keelAsyncMixin, Function<Row, Future<Void>> rowFunc) {
+        return keelAsyncMixin.asyncCallIteratively(getRowIterator(), rowFunc);
     }
 
     /**
@@ -423,8 +423,8 @@ public class KeelSheet {
      * @param batchSize 批次大小
      * @return 表示操作完成的 Future
      */
-    public final Future<Void> readAllRowsAsync(Keel keel, Function<List<Row>, Future<Void>> rowsFunc, int batchSize) {
-        return keel.asyncCallIteratively(
+    public final Future<Void> readAllRowsAsync(KeelAsyncMixin keelAsyncMixin, Function<List<Row>, Future<Void>> rowsFunc, int batchSize) {
+        return keelAsyncMixin.asyncCallIteratively(
                 getRowIterator(),
                 rowsFunc,
                 batchSize
@@ -436,8 +436,8 @@ public class KeelSheet {
      *
      * @return 表示矩阵读取完成的 Future
      */
-    public final Future<KeelSheetMatrix> readAllRowsToMatrixAsync(Keel keel) {
-        return readAllRowsToMatrixAsync(keel, 0, 0, SheetRowFilter.toThrowEmptyRows());
+    public final Future<KeelSheetMatrix> readAllRowsToMatrixAsync(KeelAsyncMixin keelAsyncMixin) {
+        return readAllRowsToMatrixAsync(keelAsyncMixin, 0, 0, SheetRowFilter.toThrowEmptyRows());
     }
 
     /**
@@ -448,7 +448,7 @@ public class KeelSheet {
      * @param sheetRowFilter 工作表行过滤器（可选）
      * @return 表示矩阵读取完成的 Future
      */
-    public final Future<KeelSheetMatrix> readAllRowsToMatrixAsync(Keel keel, int headerRowIndex, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
+    public final Future<KeelSheetMatrix> readAllRowsToMatrixAsync(KeelAsyncMixin keelAsyncMixin, int headerRowIndex, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
         if (headerRowIndex < 0) throw new IllegalArgumentException("headerRowIndex less than zero");
 
         AtomicInteger checkColumnsRef = new AtomicInteger();
@@ -459,7 +459,7 @@ public class KeelSheet {
         KeelSheetMatrix keelSheetMatrix = new KeelSheetMatrix();
         AtomicInteger rowIndex = new AtomicInteger(0);
 
-        return readAllRowsAsync(keel, rows -> {
+        return readAllRowsAsync(keelAsyncMixin, rows -> {
             rows.forEach(row -> {
                 int currentRowIndex = rowIndex.get();
                 if (headerRowIndex == currentRowIndex) {
@@ -489,8 +489,8 @@ public class KeelSheet {
      *
      * @return 表示模板化矩阵读取完成的 Future
      */
-    public final Future<KeelSheetTemplatedMatrix> readAllRowsToTemplatedMatrixAsync(Keel keel) {
-        return readAllRowsToTemplatedMatrixAsync(keel, 0, 0, SheetRowFilter.toThrowEmptyRows());
+    public final Future<KeelSheetTemplatedMatrix> readAllRowsToTemplatedMatrixAsync(KeelAsyncMixin keelAsyncMixin) {
+        return readAllRowsToTemplatedMatrixAsync(keelAsyncMixin, 0, 0, SheetRowFilter.toThrowEmptyRows());
     }
 
     /**
@@ -501,7 +501,7 @@ public class KeelSheet {
      * @param sheetRowFilter 工作表行过滤器（可选）
      * @return 表示模板化矩阵读取完成的 Future
      */
-    public final Future<KeelSheetTemplatedMatrix> readAllRowsToTemplatedMatrixAsync(Keel keel, int headerRowIndex, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
+    public final Future<KeelSheetTemplatedMatrix> readAllRowsToTemplatedMatrixAsync(KeelAsyncMixin keelAsyncMixin, int headerRowIndex, int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
         if (headerRowIndex < 0) throw new IllegalArgumentException("headerRowIndex less than zero");
 
         AtomicInteger checkColumnsRef = new AtomicInteger();
@@ -512,7 +512,7 @@ public class KeelSheet {
         AtomicInteger rowIndex = new AtomicInteger(0);
         AtomicReference<@Nullable KeelSheetTemplatedMatrix> templatedMatrixRef = new AtomicReference<>();
 
-        return readAllRowsAsync(keel, rows -> {
+        return readAllRowsAsync(keelAsyncMixin, rows -> {
             rows.forEach(row -> {
                 int currentRowIndex = rowIndex.get();
                 if (currentRowIndex == headerRowIndex) {
@@ -594,14 +594,14 @@ public class KeelSheet {
      * @param matrix 矩阵数据
      * @return 表示写入操作完成的 Future
      */
-    public Future<Void> writeMatrixAsync(Keel keel, KeelSheetMatrix matrix) {
+    public Future<Void> writeMatrixAsync(KeelAsyncMixin keelAsyncMixin, KeelSheetMatrix matrix) {
         AtomicInteger rowIndexRef = new AtomicInteger(0);
         if (!matrix.getHeaderRow().isEmpty()) {
             writeAllRows(List.of(matrix.getHeaderRow()), 0, 0);
             rowIndexRef.incrementAndGet();
         }
 
-        return keel.asyncCallIteratively(matrix.getRawRowList().iterator(), rawRows -> {
+        return keelAsyncMixin.asyncCallIteratively(matrix.getRawRowList().iterator(), rawRows -> {
             writeAllRows(matrix.getRawRowList(), rowIndexRef.get(), 0);
             rowIndexRef.addAndGet(rawRows.size());
             return Future.succeededFuture();
@@ -629,12 +629,12 @@ public class KeelSheet {
      * @param templatedMatrix 模板化矩阵数据
      * @return 表示写入操作完成的 Future
      */
-    public Future<Void> writeTemplatedMatrixAsync(Keel keel, KeelSheetTemplatedMatrix templatedMatrix) {
+    public Future<Void> writeTemplatedMatrixAsync(KeelAsyncMixin keelAsyncMixin, KeelSheetTemplatedMatrix templatedMatrix) {
         AtomicInteger rowIndexRef = new AtomicInteger(0);
         writeAllRows(List.of(templatedMatrix.getTemplate().getColumnNames()), 0, 0);
         rowIndexRef.incrementAndGet();
 
-        return keel.asyncCallIteratively(templatedMatrix.getRawRows().iterator(), rawRows -> {
+        return keelAsyncMixin.asyncCallIteratively(templatedMatrix.getRawRows().iterator(), rawRows -> {
             writeAllRows(rawRows, rowIndexRef.get(), 0);
             rowIndexRef.addAndGet(rawRows.size());
             return Future.succeededFuture();
