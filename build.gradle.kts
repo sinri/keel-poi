@@ -2,6 +2,7 @@ plugins {
     `java-library`
     `maven-publish`
     signing
+    id("org.jreleaser") version "1.22.0"
 }
 
 // Project metadata from gradle.properties
@@ -18,6 +19,9 @@ val developerName: String by project
 val developerEmail: String by project
 val developerOrganization: String by project
 val developerOrganizationUrl: String by project
+
+val sonatypeUsername: String by project
+val sonatypePassword: String by project
 
 // Dependency versions
 val jspecifyVersion: String by project
@@ -158,13 +162,28 @@ publishing {
                     password = findProperty("internalNexusPassword") as String
                 }
             } else {
-                url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-                credentials {
-                    username = findProperty("ossrhUsername") as String? ?: System.getenv("OSSRH_USERNAME")
-                    password = findProperty("ossrhPassword") as String? ?: System.getenv("OSSRH_PASSWORD")
-                }
+//                url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+//                credentials {
+//                    username = findProperty("ossrhUsername") as String? ?: System.getenv("OSSRH_USERNAME")
+//                    password = findProperty("ossrhPassword") as String? ?: System.getenv("OSSRH_PASSWORD")
+//                }
+                url = uri(layout.buildDirectory.dir("staging-deploy"))
             }
         }
+    }
+}
+
+// 在 publishing 配置块之后添加
+tasks.named("publish") {
+    // 仅当版本是正式版本时，自动触发 jreleaserDeploy
+    if (!version.toString().endsWith("SNAPSHOT") &&
+        !version.toString().contains(Regex("-[A-Za-z]+"))
+    ) {
+        doFirst {
+            logger.lifecycle(">>> Publishing release version $version")
+            logger.lifecycle(">>> Will automatically deploy to Maven Central after staging")
+        }
+        finalizedBy("jreleaserDeploy")
     }
 }
 
@@ -172,9 +191,40 @@ publishing {
 signing {
     // Use GnuPG command for signing (configured in gradle.properties)
     useGpgCmd()
+
     // Only sign if not a SNAPSHOT and signing credentials are available
     setRequired({
         !version.toString().endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("publish")
     })
     sign(publishing.publications["mavenJava"])
+}
+
+// JReleaser 配置
+jreleaser {
+    signing {
+        pgp {
+            active.set(org.jreleaser.model.Active.ALWAYS)
+            armored.set(true)
+        }
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                active = org.jreleaser.model.Active.RELEASE
+                register("sonatype") { // "sonatype" 为自定义名称
+                    active.set(org.jreleaser.model.Active.ALWAYS)
+                    // 如果使用新的 Central Portal (https://central.sonatype.com)
+                    url.set("https://central.sonatype.com/api/v1/publisher")
+                    // 指定制品暂存目录，JReleaser 会从这里读取 POM 和 JAR
+                    stagingRepository("build/staging-deploy")
+
+                    // 认证信息通常通过环境变量提供，或在这里显式设置
+                    username.set(sonatypeUsername)
+                    password.set(sonatypePassword)
+
+                    enabled.set(true)
+                }
+            }
+        }
+    }
 }
