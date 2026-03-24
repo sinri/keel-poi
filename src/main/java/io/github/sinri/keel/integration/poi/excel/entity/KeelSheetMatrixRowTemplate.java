@@ -7,7 +7,9 @@ import java.util.List;
 
 /**
  * Excel 表格矩阵行模板接口，定义模板化矩阵中行的列结构。
- * 该接口用于定义表格中的列名和列索引的映射关系。
+ * <p>
+ * 命名上与 {@link KeelSheetMatrixTemplatedRow} 接近：本接口表示整张表的「列名 / 索引」骨架；
+ * {@link KeelSheetMatrixTemplatedRow} 则表示单行数据在该骨架上的按列访问视图。
  *
  * @since 5.0.0
  */

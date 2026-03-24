@@ -75,8 +75,6 @@ public class KeelSheetMatrixRow {
         } catch (ArithmeticException arithmeticException) {
             return null;
         }
-        //        double v = readValueToDouble(i);
-        //        return (int) v;
     }
 
     /**
@@ -94,8 +92,6 @@ public class KeelSheetMatrixRow {
         } catch (ArithmeticException arithmeticException) {
             return null;
         }
-        //        double v = readValueToDouble(i);
-        //        return (long) v;
     }
 
     /**
@@ -107,6 +103,5 @@ public class KeelSheetMatrixRow {
      */
     public double readValueToDouble(int i) {
         return readValueToBigDecimal(i).doubleValue();
-        //        return Double.parseDouble(readValue(i));
     }
 }

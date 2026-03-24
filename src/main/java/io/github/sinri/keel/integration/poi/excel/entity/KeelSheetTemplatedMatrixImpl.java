@@ -16,7 +16,6 @@ import java.util.List;
 public class KeelSheetTemplatedMatrixImpl implements KeelSheetTemplatedMatrix {
     private final KeelSheetMatrixRowTemplate template;
     private final List<List<String>> rawRows;
-    //private final List<KeelSheetMatrixTemplatedRow> templatedRows;
 
     /**
      * 构造函数，使用指定的模板创建模板化矩阵实现。
@@ -28,7 +27,6 @@ public class KeelSheetTemplatedMatrixImpl implements KeelSheetTemplatedMatrix {
     KeelSheetTemplatedMatrixImpl(KeelSheetMatrixRowTemplate template) {
         this.template = template;
         this.rawRows = new ArrayList<>();
-        //        this.templatedRows = new ArrayList<>();
     }
 
     /**
@@ -63,7 +61,6 @@ public class KeelSheetTemplatedMatrixImpl implements KeelSheetTemplatedMatrix {
     @Override
     public KeelSheetMatrixTemplatedRow getRow(int index) {
         return KeelSheetMatrixTemplatedRow.create(getTemplate(), this.rawRows.get(index));
-        //        return this.templatedRows.get(index);
     }
 
     /**
@@ -89,7 +86,6 @@ public class KeelSheetTemplatedMatrixImpl implements KeelSheetTemplatedMatrix {
     @Override
     public KeelSheetTemplatedMatrix addRawRow(List<String> rawRow) {
         this.rawRows.add(rawRow);
-        //this.templatedRows.add(KeelSheetMatrixTemplatedRow.create(getTemplate(), rawRow));
         return this;
     }
 }

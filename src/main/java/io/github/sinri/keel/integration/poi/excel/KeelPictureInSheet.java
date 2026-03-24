@@ -139,11 +139,13 @@ public class KeelPictureInSheet {
 
     /**
      * 获取图片数据。
+     * <p>
+     * 返回底层字节数组的防御性拷贝，调用方修改返回值不会影响工作簿中的原始数据。
      *
      * @return 图片数据字节数组
      */
     public byte[] getData() {
-        return data;
+        return data.clone();
     }
 
     /**

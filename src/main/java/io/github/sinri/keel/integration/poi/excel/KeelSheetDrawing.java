@@ -34,20 +34,14 @@ class KeelSheetDrawing {
      * @param keelSheet 工作表实例
      */
     public KeelSheetDrawing(KeelSheet keelSheet) {
-        drawingForXlsxValueBox.setValue(null);
-        drawingForXlsValueBox.setValue(null);
         if (keelSheet.getSheetsReaderType() == KeelSheetsReaderType.XLSX) {
             var x = keelSheet.getSheet().getDrawingPatriarch();
-            if (x == null) {
-                drawingForXlsxValueBox.setValue(null);
-            } else {
+            if (x != null) {
                 drawingForXlsxValueBox.setValue((XSSFDrawing) x);
             }
         } else if (keelSheet.getSheetsReaderType() == KeelSheetsReaderType.XLS) {
             var x = keelSheet.getSheet().getDrawingPatriarch();
-            if (x == null) {
-                drawingForXlsValueBox.setValue(null);
-            } else {
+            if (x != null) {
                 drawingForXlsValueBox.setValue((HSSFPatriarch) x);
             }
         }
@@ -81,7 +75,7 @@ class KeelSheetDrawing {
 
 
     private @Nullable XSSFDrawing getDrawingForXlsx() {
-        return drawingForXlsxValueBox.getValue();
+        return drawingForXlsxValueBox.isValueAlreadySet() ? drawingForXlsxValueBox.getValue() : null;
     }
 
 
@@ -103,7 +97,7 @@ class KeelSheetDrawing {
 
 
     private @Nullable HSSFPatriarch getDrawingForXls() {
-        return drawingForXlsValueBox.getValue();
+        return drawingForXlsValueBox.isValueAlreadySet() ? drawingForXlsValueBox.getValue() : null;
     }
 
 

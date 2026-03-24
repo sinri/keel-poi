@@ -20,9 +20,6 @@ val developerEmail: String by project
 val developerOrganization: String by project
 val developerOrganizationUrl: String by project
 
-val sonatypeUsername: String by project
-val sonatypePassword: String by project
-
 // Dependency versions
 val jspecifyVersion: String by project
 val vertxVersion: String by project
@@ -218,9 +215,9 @@ jreleaser {
                     // 指定制品暂存目录，JReleaser 会从这里读取 POM 和 JAR
                     stagingRepository("build/staging-deploy")
 
-                    // 认证信息通常通过环境变量提供，或在这里显式设置
-                    username.set(sonatypeUsername)
-                    password.set(sonatypePassword)
+                    // 仅在执行发布相关任务时需要；未配置时为空字符串，避免在 unrelated 任务（如 compileJava）解析 gradle.properties 失败
+                    username.set(findProperty("sonatypeUsername")?.toString().orEmpty())
+                    password.set(findProperty("sonatypePassword")?.toString().orEmpty())
 
                     enabled.set(true)
                 }

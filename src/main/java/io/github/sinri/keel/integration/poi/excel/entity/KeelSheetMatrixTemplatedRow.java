@@ -7,7 +7,10 @@ import java.util.List;
 
 /**
  * Excel 表格模板化行接口，表示带有模板结构的表格行。
+ * <p>
  * 该接口提供了基于列索引或列名获取列值的方法，以及将行数据转换为 JSON 对象的功能。
+ * <p>
+ * 与 {@link KeelSheetMatrixRowTemplate} 区分：后者描述列结构，本接口描述一行原始单元格在该结构下的访问方式。
  *
  * @since 5.0.0
  */
