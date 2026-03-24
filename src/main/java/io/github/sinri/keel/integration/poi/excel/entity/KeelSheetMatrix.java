@@ -2,10 +2,11 @@ package io.github.sinri.keel.integration.poi.excel.entity;
 
 import org.jspecify.annotations.NullMarked;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
 
 /**
@@ -61,7 +62,7 @@ public class KeelSheetMatrix {
      * @since 5.0.0
      */
     public List<String> getHeaderRow() {
-        return headerRow;
+        return Collections.unmodifiableList(headerRow);
     }
 
     /**
@@ -96,7 +97,7 @@ public class KeelSheetMatrix {
      * @since 5.0.0
      */
     public List<List<String>> getRawRowList() {
-        return rows;
+        return Collections.unmodifiableList(rows);
     }
 
     /**
@@ -117,14 +118,14 @@ public class KeelSheetMatrix {
 
     /**
      * 获取行迭代器，用于遍历矩阵中的所有行。
-     * 该方法使用指定的行类来创建迭代器。
+     * 该方法使用指定的工厂函数将原始行数据转换为自定义行对象。
      *
-     * @param rClass 行类的 Class 对象
+     * @param rowFactory 将原始行数据转换为行对象的工厂函数
      * @return 行迭代器
-     * @since 5.0.0
+     * @since 5.0.1
      */
-    public <R extends KeelSheetMatrixRow> Iterator<R> getRowIterator(Class<R> rClass) {
-        return new RowReaderIterator<>(rClass, rows);
+    public <R extends KeelSheetMatrixRow> Iterator<R> getRowIterator(Function<List<String>, R> rowFactory) {
+        return new RowReaderIterator<>(rowFactory, rows);
     }
 
     /**
@@ -135,8 +136,7 @@ public class KeelSheetMatrix {
      * @since 5.0.0
      */
     public Iterator<KeelSheetMatrixRow> getRowIterator() {
-        return new RowReaderIterator<>(strings -> new KeelSheetMatrixRow(strings) {
-        }, rows);
+        return new RowReaderIterator<>(KeelSheetMatrixRow::new, rows);
     }
 
     /**
@@ -151,25 +151,6 @@ public class KeelSheetMatrix {
         private final List<List<String>> rows;
         private int nextIndex;
         private final Function<List<String>, R> rawRow2row;
-
-        /**
-         * 构造函数，使用指定的行类和行数据列表创建行读取器迭代器。
-         *
-         * @param rClass 行类的 Class 对象
-         * @param rows   行数据列表
-         * @since 5.0.0
-         */
-        public RowReaderIterator(Class<R> rClass, List<List<String>> rows) {
-            this(strings -> {
-                try {
-                    var constructor = rClass.getConstructor(List.class);
-                    return constructor.newInstance(strings);
-                } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
-                         IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            }, rows);
-        }
 
         /**
          * 构造函数，使用指定的转换函数和行数据列表创建行读取器迭代器。
@@ -204,6 +185,9 @@ public class KeelSheetMatrix {
          */
         @Override
         public R next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException("No more rows in matrix (size=" + rows.size() + ")");
+            }
             List<String> rawRow = this.rows.get(nextIndex);
             nextIndex++;
             return this.rawRow2row.apply(rawRow);

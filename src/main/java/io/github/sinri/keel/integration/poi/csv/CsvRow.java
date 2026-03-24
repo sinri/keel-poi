@@ -3,7 +3,9 @@ package io.github.sinri.keel.integration.poi.csv;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * CSV 行类，表示 CSV 文件中的一行数据。
@@ -42,5 +44,25 @@ public class CsvRow {
      */
     public int size() {
         return this.cells.size();
+    }
+
+    /**
+     * 获取此 CSV 行中所有单元格的不可变列表。
+     *
+     * @return 所有单元格的不可变列表
+     * @since 5.0.1
+     */
+    public List<CsvCell> getCells() {
+        return Collections.unmodifiableList(cells);
+    }
+
+    /**
+     * 获取此 CSV 行中所有单元格的流。
+     *
+     * @return 单元格的流
+     * @since 5.0.1
+     */
+    public Stream<CsvCell> stream() {
+        return cells.stream();
     }
 }

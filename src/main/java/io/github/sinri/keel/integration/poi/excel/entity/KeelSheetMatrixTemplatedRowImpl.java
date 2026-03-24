@@ -3,6 +3,7 @@ package io.github.sinri.keel.integration.poi.excel.entity;
 import io.vertx.core.json.JsonObject;
 import org.jspecify.annotations.NullMarked;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -50,6 +51,9 @@ public class KeelSheetMatrixTemplatedRowImpl implements KeelSheetMatrixTemplated
      */
     @Override
     public String getColumnValue(int i) {
+        if (i >= this.rawRow.size()) {
+            return "";
+        }
         return this.rawRow.get(i);
     }
 
@@ -76,7 +80,7 @@ public class KeelSheetMatrixTemplatedRowImpl implements KeelSheetMatrixTemplated
      */
     @Override
     public List<String> getRawRow() {
-        return rawRow;
+        return Collections.unmodifiableList(rawRow);
     }
 
     /**

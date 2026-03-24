@@ -35,6 +35,8 @@ public class SheetsCreateOptions {
 
     /**
      * 检查是否使用流式写入。
+     * <p>
+     * 流式写入仅对 XLSX 格式有效（使用 SXSSFWorkbook）；当 {@link #isUseXlsx()} 为 false 时此选项被忽略。
      *
      * @return 如果使用流式写入则返回 true，否则返回 false
      */
@@ -44,6 +46,8 @@ public class SheetsCreateOptions {
 
     /**
      * 设置是否使用流式写入。
+     * <p>
+     * 流式写入仅对 XLSX 格式有效（使用 SXSSFWorkbook）；当 {@link #isUseXlsx()} 为 false 时此选项被忽略。
      *
      * @param useStreamWriting 是否使用流式写入
      * @return 当前选项实例，支持链式调用

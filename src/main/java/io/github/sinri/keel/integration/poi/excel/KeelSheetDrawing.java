@@ -36,13 +36,13 @@ class KeelSheetDrawing {
     public KeelSheetDrawing(KeelSheet keelSheet) {
         if (keelSheet.getSheetsReaderType() == KeelSheetsReaderType.XLSX) {
             var x = keelSheet.getSheet().getDrawingPatriarch();
-            if (x != null) {
-                drawingForXlsxValueBox.setValue((XSSFDrawing) x);
+            if (x instanceof XSSFDrawing xssfDrawing) {
+                drawingForXlsxValueBox.setValue(xssfDrawing);
             }
         } else if (keelSheet.getSheetsReaderType() == KeelSheetsReaderType.XLS) {
             var x = keelSheet.getSheet().getDrawingPatriarch();
-            if (x != null) {
-                drawingForXlsValueBox.setValue((HSSFPatriarch) x);
+            if (x instanceof HSSFPatriarch hssfPatriarch) {
+                drawingForXlsValueBox.setValue(hssfPatriarch);
             }
         }
     }

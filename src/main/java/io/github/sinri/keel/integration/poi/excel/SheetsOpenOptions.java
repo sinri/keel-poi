@@ -36,7 +36,12 @@ public class SheetsOpenOptions {
         org.apache.poi.openxml4j.opc.ZipPackage.setUseTempFilePackageParts(true);
     }
 
-    boolean isWithFormulaEvaluator() {
+    /**
+     * 检查是否启用公式求值器。
+     *
+     * @return 如果启用公式求值器则返回 true，否则返回 false
+     */
+    public boolean isWithFormulaEvaluator() {
         return this.withFormulaEvaluator;
     }
 
@@ -69,6 +74,7 @@ public class SheetsOpenOptions {
      */
     public SheetsOpenOptions setFile(File file) {
         this.file = file;
+        this.inputStream = null;
         return this;
     }
 
@@ -80,6 +86,7 @@ public class SheetsOpenOptions {
      */
     public SheetsOpenOptions setFile(String filePath) {
         this.file = new File(filePath);
+        this.inputStream = null;
         return this;
     }
 
@@ -101,6 +108,7 @@ public class SheetsOpenOptions {
      */
     public SheetsOpenOptions setInputStream(InputStream inputStream) {
         this.inputStream = inputStream;
+        this.file = null;
         return this;
     }
 

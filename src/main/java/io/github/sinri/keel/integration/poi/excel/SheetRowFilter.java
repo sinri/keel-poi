@@ -14,11 +14,12 @@ import java.util.List;
 @NullMarked
 public interface SheetRowFilter {
     /**
-     * 创建一个过滤器，用于过滤掉所有单元格都为空的行。
+     * 创建一个过滤器，用于排除所有单元格都为空的行。
      *
      * @return 一个过滤器实例，该过滤器会判断一行是否所有单元格都为空
+     * @since 5.0.1
      */
-    static SheetRowFilter toThrowEmptyRows() {
+    static SheetRowFilter toExcludeEmptyRows() {
         return rawRow -> {
             boolean allEmpty = true;
             for (String cell : rawRow) {
@@ -32,12 +33,34 @@ public interface SheetRowFilter {
     }
 
     /**
+     * 创建一个过滤器，用于过滤掉所有单元格都为空的行。
+     *
+     * @return 一个过滤器实例，该过滤器会判断一行是否所有单元格都为空
+     * @deprecated 请使用 {@link #toExcludeEmptyRows()} 代替，方法名更清晰。
+     */
+    @Deprecated(since = "5.0.1")
+    static SheetRowFilter toThrowEmptyRows() {
+        return toExcludeEmptyRows();
+    }
+
+    /**
+     * 判断是否应该排除当前行。
+     *
+     * @param rawRow 原始行数据，包含该行所有单元格的内容
+     * @return 如果应该排除此行则返回 true，否则返回 false
+     * @since 5.0.1
+     */
+    default boolean shouldExcludeRow(List<String> rawRow) {
+        return shouldThrowThisRawRow(rawRow);
+    }
+
+    /**
      * 判断是否应该过滤掉当前行。
      *
      * @param rawRow 原始行数据，包含该行所有单元格的内容
      * @return 如果应该过滤掉此行则返回 true，否则返回 false
+     * @deprecated 请使用 {@link #shouldExcludeRow(List)} 代替，方法名更清晰。
      */
+    @Deprecated(since = "5.0.1")
     boolean shouldThrowThisRawRow(List<String> rawRow);
-
-
 }

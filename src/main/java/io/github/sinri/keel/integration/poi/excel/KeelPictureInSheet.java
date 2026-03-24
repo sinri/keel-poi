@@ -36,14 +36,17 @@ public class KeelPictureInSheet {
             var anchor = xssfPicture.getClientAnchor();
             atRow = anchor.getRow1() + 1; // 转换为Excel行号（从1开始）
             atCol = anchor.getCol1() + 1; // 转换为Excel列号（从1开始）
+
+            var dimension = xssfPicture.getImageDimension();
+            width = dimension.width;
+            height = dimension.height;
         } else {
             atRow = -1;
             atCol = -1;
-        }
 
-        var dimension = xssfPicture.getImageDimension();
-        width = dimension.width;
-        height = dimension.height;
+            width = -1;
+            height = -1;
+        }
 
         XSSFPictureData pictureData = xssfPicture.getPictureData();
         this.workbookDefinedPictureType = pictureData.getPictureType();
@@ -77,7 +80,6 @@ public class KeelPictureInSheet {
 
         HSSFPictureData pictureData = hssfPicture.getPictureData();
         this.workbookDefinedPictureType = pictureData.getPictureType();
-        // int format = pictureData.getFormat();// HSSF specific
         this.data = pictureData.getData();
         this.suggestFileExtension = pictureData.suggestFileExtension();
         this.mimeType = pictureData.getMimeType();

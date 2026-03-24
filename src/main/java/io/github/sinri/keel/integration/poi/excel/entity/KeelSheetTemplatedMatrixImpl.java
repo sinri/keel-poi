@@ -4,6 +4,7 @@ package io.github.sinri.keel.integration.poi.excel.entity;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -37,7 +38,7 @@ public class KeelSheetTemplatedMatrixImpl implements KeelSheetTemplatedMatrix {
      */
     @Override
     public List<List<String>> getRawRows() {
-        return rawRows;
+        return Collections.unmodifiableList(rawRows);
     }
 
     /**

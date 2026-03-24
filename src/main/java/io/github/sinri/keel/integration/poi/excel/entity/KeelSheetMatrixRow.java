@@ -35,6 +35,11 @@ public class KeelSheetMatrixRow {
      * @since 5.0.0
      */
     public String readValue(int i) {
+        if (i < 0 || i >= rawRow.size()) {
+            throw new IndexOutOfBoundsException(
+                    "Cell index " + i + " out of bounds for row with " + rawRow.size() + " columns"
+            );
+        }
         return rawRow.get(i);
     }
 
@@ -72,7 +77,7 @@ public class KeelSheetMatrixRow {
     public @Nullable Integer readValueToInteger(int i) {
         try {
             return readValueToBigDecimal(i).intValueExact();
-        } catch (ArithmeticException arithmeticException) {
+        } catch (NumberFormatException | ArithmeticException e) {
             return null;
         }
     }
@@ -89,7 +94,7 @@ public class KeelSheetMatrixRow {
     public @Nullable Long readValueToLong(int i) {
         try {
             return readValueToBigDecimal(i).longValueExact();
-        } catch (ArithmeticException arithmeticException) {
+        } catch (NumberFormatException | ArithmeticException e) {
             return null;
         }
     }
