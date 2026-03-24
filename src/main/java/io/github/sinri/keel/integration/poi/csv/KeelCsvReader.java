@@ -126,50 +126,46 @@ public class KeelCsvReader implements Closeable {
         }
         if (buffer == null) {
             buffer = new StringBuilder();
-        } else {
-            buffer.append("\n");
         }
 
-        for (int i = 0; i < line.length(); i++) {
-            var singleString = line.substring(i, i + 1);
-            if (singleString.equals("\"")) {
-                if (quoterFlag == 0) {
-                    quoterFlag = 1;
-                } else if (quoterFlag == 1) {
-                    quoterFlag = 2;
+        while (true) {
+            for (int i = 0; i < line.length(); i++) {
+                char c = line.charAt(i);
+                if (c == '"') {
+                    if (quoterFlag == 0) {
+                        quoterFlag = 1;
+                    } else if (quoterFlag == 1) {
+                        quoterFlag = 2;
+                    } else {
+                        buffer.append(c);
+                        quoterFlag = 1;
+                    }
+                } else if (!separator.isEmpty()
+                        && i + separator.length() <= line.length()
+                        && line.regionMatches(i, separator, 0, separator.length())) {
+                    if (quoterFlag == 0 || quoterFlag == 2) {
+                        row.addCell(new CsvCell(buffer.toString()));
+                        quoterFlag = 0;
+                        buffer = new StringBuilder();
+                    } else {
+                        buffer.append(separator);
+                    }
+                    i += separator.length() - 1;
                 } else {
-                    buffer.append(singleString);
-                    quoterFlag = 1;
+                    buffer.append(c);
                 }
-            } else if (singleString.equals(separator)) {
-                if (quoterFlag == 0 || quoterFlag == 2) {
-                    // buffer to cell
-                    row.addCell(new CsvCell(buffer.toString()));
-                    quoterFlag = 0;
-                    buffer = new StringBuilder();
-                } else {
-                    buffer.append(singleString);
-                }
-            } else {
-                buffer.append(singleString);
             }
-        }
 
-        // now this line ends
-        if (quoterFlag == 0 || quoterFlag == 2) {
-            // now the row ends within this line
-            row.addCell(new CsvCell(buffer.toString()));
-            return row;
-        } else {
-            // this row seems to expend to the next line
-            String nextLine = br.readLine();
-            if (nextLine == null) {
-                // strange: file ending without escape quote, for safety, escape it:
-                // let us handle it as quoterFlag is 2
+            if (quoterFlag == 0 || quoterFlag == 2) {
                 row.addCell(new CsvCell(buffer.toString()));
                 return row;
             }
-            return consumeOneLine(row, buffer, quoterFlag, nextLine);
+            buffer.append("\n");
+            line = br.readLine();
+            if (line == null) {
+                row.addCell(new CsvCell(buffer.toString()));
+                return row;
+            }
         }
     }
 

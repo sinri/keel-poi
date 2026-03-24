@@ -35,7 +35,7 @@ public class KeelSheets implements Closeable {
      *
      * @since 5.0.0
      */
-    private final @Nullable FormulaEvaluator formulaEvaluator;
+    private @Nullable FormulaEvaluator formulaEvaluator;
     protected Workbook autoWorkbook;
     /**
      * This field is null for `write` mode.
@@ -184,13 +184,17 @@ public class KeelSheets implements Closeable {
                          KeelSheets keelSheets;
                          if (sheetsCreateOptions.isUseXlsx()) {
                              keelSheets = new KeelSheets(null, new XSSFWorkbook(), sheetsCreateOptions.isWithFormulaEvaluator());
-                             if (sheetsCreateOptions.isUseStreamWriting()) {
-                                 if (keelSheets.autoWorkbook instanceof XSSFWorkbook) {
-                                     keelSheets.autoWorkbook = new SXSSFWorkbook((XSSFWorkbook) (keelSheets.autoWorkbook));
-                                 } else {
-                                     throw new IllegalStateException("Now autoWorkbook is not an instance of XSSFWorkbook.");
-                                 }
-                             }
+                            if (sheetsCreateOptions.isUseStreamWriting()) {
+                                if (keelSheets.autoWorkbook instanceof XSSFWorkbook) {
+                                    keelSheets.autoWorkbook = new SXSSFWorkbook((XSSFWorkbook) (keelSheets.autoWorkbook));
+                                    if (keelSheets.formulaEvaluator != null) {
+                                        keelSheets.formulaEvaluator =
+                                                keelSheets.autoWorkbook.getCreationHelper().createFormulaEvaluator();
+                                    }
+                                } else {
+                                    throw new IllegalStateException("Now autoWorkbook is not an instance of XSSFWorkbook.");
+                                }
+                            }
                          } else {
                              keelSheets = new KeelSheets(null, new HSSFWorkbook(), sheetsCreateOptions.isWithFormulaEvaluator());
                          }

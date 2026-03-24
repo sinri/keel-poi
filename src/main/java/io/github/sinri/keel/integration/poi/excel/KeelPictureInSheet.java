@@ -64,10 +64,9 @@ public class KeelPictureInSheet {
             atRow = anchor.getRow1() + 1; // 转换为Excel行号（从1开始）
             atCol = anchor.getCol1() + 1; // 转换为Excel列号（从1开始）
 
-            // 使用anchor的尺寸信息 - POI 5.4.1兼容方式
-            // 转换为像素（近似值）
-            width = Math.max(1, anchor.getDx1() / 9525); // 9525 EMUs per pixel
-            height = Math.max(1, anchor.getDy1() / 9525);
+            var dimension = hssfPicture.getImageDimension();
+            width = Math.max(1, dimension.width);
+            height = Math.max(1, dimension.height);
         } else {
             atRow = -1;
             atCol = -1;

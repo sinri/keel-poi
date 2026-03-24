@@ -5,6 +5,7 @@ import io.vertx.core.Future;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -229,6 +230,42 @@ class KeelCsvReaderTest extends KeelJUnit5Test {
 
             // 应该有1个表头 + 5行数据 = 6行
             assertEquals(6, rowCount);
+        }
+    }
+
+    @Test
+    void multiCharacterSeparator() throws IOException {
+        String csv = "a||b||c\n";
+        try (KeelCsvReader reader = new KeelCsvReader(
+                new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)),
+                StandardCharsets.UTF_8,
+                "||")) {
+            CsvRow row = reader.next();
+            assertNotNull(row);
+            assertEquals(3, row.size());
+            assertEquals("a", row.getCell(0).getString());
+            assertEquals("b", row.getCell(1).getString());
+            assertEquals("c", row.getCell(2).getString());
+        }
+    }
+
+    @Test
+    void quotedFieldSpanningManyLinesUsesIterationNotDeepRecursion() throws IOException {
+        StringBuilder body = new StringBuilder("\"");
+        for (int i = 0; i < 5000; i++) {
+            body.append("x\n");
+        }
+        body.append("\"");
+        String csv = body + ",tail\n";
+        try (KeelCsvReader reader = new KeelCsvReader(
+                new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)),
+                StandardCharsets.UTF_8,
+                ",")) {
+            CsvRow row = reader.next();
+            assertNotNull(row);
+            assertEquals(2, row.size());
+            assertTrue(row.getCell(0).getString().contains("x"));
+            assertEquals("tail", row.getCell(1).getString());
         }
     }
 }

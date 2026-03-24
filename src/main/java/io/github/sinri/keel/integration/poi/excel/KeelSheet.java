@@ -142,18 +142,28 @@ public class KeelSheet {
     /**
      * 将行数据转换为原始行列表。
      *
-     * @param row                 POI 行对象
+     * @param row                 POI 行对象，若为 null 则视为空白行
      * @param maxColumns          最大列数
      * @param sheetRowFilter      工作表行过滤器（可选）
      * @param formulaEvaluatorBox 公式求值器值盒子
      * @return 原始行数据列表，如果行被过滤器丢弃则返回 null
      */
     public static @Nullable List<String> dumpRowToRawRow(
-            Row row,
+            @Nullable Row row,
             int maxColumns,
             @Nullable SheetRowFilter sheetRowFilter,
             ValueBox<FormulaEvaluator> formulaEvaluatorBox
     ) {
+        if (row == null) {
+            List<String> blanks = new ArrayList<>(maxColumns);
+            for (int i = 0; i < maxColumns; i++) {
+                blanks.add("");
+            }
+            if (sheetRowFilter != null && sheetRowFilter.shouldThrowThisRawRow(blanks)) {
+                return null;
+            }
+            return blanks;
+        }
         List<String> rowDatum = new ArrayList<>();
 
         for (int i = 0; i < maxColumns; i++) {
@@ -223,9 +233,9 @@ public class KeelSheet {
      * 读取指定行索引的行。
      *
      * @param i 行索引
-     * @return 指定行索引的 POI 行对象
+     * @return 指定行索引的 POI 行对象；物理行不存在时为 null
      */
-    public Row readRow(int i) {
+    public @Nullable Row readRow(int i) {
         return sheet.getRow(i);
     }
 
