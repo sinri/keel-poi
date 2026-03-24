@@ -7,8 +7,6 @@ import org.jspecify.annotations.Nullable;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Iterator;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 /**
@@ -69,30 +67,27 @@ public class KeelCsvReader implements Closeable {
             InputStream inputStream, Charset charset, String separator,
             Function<KeelCsvReader, Future<Void>> readFunc
     ) {
-        AtomicReference<@Nullable KeelCsvReader> ref = new AtomicReference<>();
         return Future.succeededFuture()
                      .compose(v -> {
-                         KeelCsvReader keelCsvReader = new KeelCsvReader(inputStream, charset, separator);
-                         ref.set(keelCsvReader);
-                         return Future.succeededFuture();
-                     })
-                     .compose(v -> {
-                         KeelCsvReader keelCsvReader = ref.get();
-                         Objects.requireNonNull(keelCsvReader);
-                         return readFunc.apply(keelCsvReader);
-                     })
-                     .eventually(() -> {
-                         KeelCsvReader keelCsvReader = ref.get();
-                         if (keelCsvReader != null) {
-                             try {
-                                 keelCsvReader.close();
-                                 return Future.succeededFuture();
-                             } catch (IOException e) {
-                                 return Future.failedFuture(e);
-                             }
-                         } else {
-                             return Future.succeededFuture();
-                         }
+                         KeelCsvReader reader = new KeelCsvReader(inputStream, charset, separator);
+                         return readFunc.apply(reader).compose(
+                                 ok -> {
+                                     try {
+                                         reader.close();
+                                         return Future.succeededFuture();
+                                     } catch (IOException e) {
+                                         return Future.failedFuture(e);
+                                     }
+                                 },
+                                 err -> {
+                                     try {
+                                         reader.close();
+                                     } catch (IOException closeErr) {
+                                         err.addSuppressed(closeErr);
+                                     }
+                                     return Future.failedFuture(err);
+                                 }
+                         );
                      });
     }
 

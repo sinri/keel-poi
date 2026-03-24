@@ -30,7 +30,13 @@ public class KeelSheetMatrixRowTemplateImpl implements KeelSheetMatrixRowTemplat
         this.headerRow = headerRow;
         this.headerMap = new LinkedHashMap<>();
         for (int i = 0; i < headerRow.size(); i++) {
-            this.headerMap.put(Objects.requireNonNullElse(headerRow.get(i), ""), i);
+            String key = Objects.requireNonNullElse(headerRow.get(i), "");
+            if (headerMap.containsKey(key)) {
+                throw new IllegalArgumentException(
+                        "Duplicate column name in header: \"" + key + "\" at index " + i
+                );
+            }
+            headerMap.put(key, i);
         }
     }
 

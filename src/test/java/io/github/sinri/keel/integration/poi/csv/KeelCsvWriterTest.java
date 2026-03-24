@@ -88,12 +88,11 @@ class KeelCsvWriterTest extends KeelJUnit5Test {
             writer.writeRowEnding();
         }
 
-        // 验证文件内容
+        // 验证文件内容（RFC 4180 CRLF；readAllLines 已剥离行终止符）
         List<String> lines = Files.readAllLines(outputFile, StandardCharsets.UTF_8);
         assertEquals(2, lines.size());
-        assertTrue(lines.get(0).startsWith("Name,"));
-        assertTrue(lines.get(0).endsWith(",City,"));
-        assertTrue(lines.get(1).startsWith("Alice,"));
+        assertEquals("Name,Age,City", lines.get(0));
+        assertEquals("Alice,30,New York", lines.get(1));
     }
 
     @Test

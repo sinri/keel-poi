@@ -11,9 +11,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 
@@ -27,8 +24,14 @@ import java.util.function.Function;
  */
 @NullMarked
 public class KeelCsvWriter implements Closeable {
+    /**
+     * RFC 4180 推荐记录分隔符为 CRLF。
+     */
+    private static final String RECORD_SEPARATOR = "\r\n";
+
     private final OutputStream outputStream;
-    private final AtomicBoolean atLineBeginningRef;
+    private final Object lineLock = new Object();
+    private boolean atLineBeginning = true;
     private final String separator;
     private final Charset charset;
 
@@ -47,7 +50,6 @@ public class KeelCsvWriter implements Closeable {
         this.outputStream = outputStream;
         this.separator = separator;
         this.charset = charset;
-        this.atLineBeginningRef = new AtomicBoolean(true);
     }
 
     /**
@@ -66,29 +68,27 @@ public class KeelCsvWriter implements Closeable {
             Charset charset,
             Function<KeelCsvWriter, Future<Void>> writeCsvFunc
     ) {
-        AtomicReference<@Nullable KeelCsvWriter> ref = new AtomicReference<>();
         return Future.succeededFuture()
                      .compose(v -> {
-                         var x = new KeelCsvWriter(outputStream, separator, charset);
-                         ref.set(x);
-                         return Future.succeededFuture();
-                     })
-                     .compose(v -> {
-                         KeelCsvWriter keelCsvWriter = ref.get();
-                         return writeCsvFunc.apply(Objects.requireNonNull(keelCsvWriter));
-                     })
-                     .eventually(() -> {
-                         KeelCsvWriter keelCsvWriter = ref.get();
-                         if (keelCsvWriter != null) {
-                             try {
-                                 keelCsvWriter.close();
-                                 return Future.succeededFuture();
-                             } catch (IOException e) {
-                                 return Future.failedFuture(e);
-                             }
-                         } else {
-                             return Future.succeededFuture();
-                         }
+                         KeelCsvWriter writer = new KeelCsvWriter(outputStream, separator, charset);
+                         return writeCsvFunc.apply(writer).compose(
+                                 ok -> {
+                                     try {
+                                         writer.close();
+                                         return Future.succeededFuture();
+                                     } catch (IOException e) {
+                                         return Future.failedFuture(e);
+                                     }
+                                 },
+                                 err -> {
+                                     try {
+                                         writer.close();
+                                     } catch (IOException closeErr) {
+                                         err.addSuppressed(closeErr);
+                                     }
+                                     return Future.failedFuture(err);
+                                 }
+                         );
                      });
     }
 
@@ -108,17 +108,21 @@ public class KeelCsvWriter implements Closeable {
     }
 
     /**
-     * 将带引号的字符串和分隔符写入输出流作为 CSV 单元格。
-     * <p> 该方法会在单元格后写入分隔符，因此列数会比实际大小多一列。
-     * 如果您关心这一点，请避免使用此方法，而使用 {@link KeelCsvWriter#blockWriteRow(List)}。
+     * 将带必要转义的单元格值写入当前逻辑行。
+     * <p>
+     * 除第一个单元格外，会在单元格前写入字段分隔符；不会在最后一个单元格后附加多余分隔符。
+     * 请配合 {@link KeelCsvWriter#writeRowEnding()} 结束一行。
      *
      * @param cellValue 要写入的单元格值
      * @throws IOException 当写入过程中发生 IO 异常时抛出
      */
     public void writeCell(String cellValue) throws IOException {
-        synchronized (atLineBeginningRef) {
-            writeToOutputStream(quote(cellValue) + separator);
-            atLineBeginningRef.set(false);
+        synchronized (lineLock) {
+            if (!atLineBeginning) {
+                writeToOutputStream(separator);
+            }
+            writeToOutputStream(quote(cellValue));
+            atLineBeginning = false;
         }
     }
 
@@ -130,9 +134,9 @@ public class KeelCsvWriter implements Closeable {
      * @throws IOException 当写入过程中发生 IO 异常时抛出
      */
     public void writeRowEnding() throws IOException {
-        synchronized (atLineBeginningRef) {
-            writeToOutputStream("\n");
-            atLineBeginningRef.set(true);
+        synchronized (lineLock) {
+            writeToOutputStream(RECORD_SEPARATOR);
+            atLineBeginning = true;
         }
     }
 
@@ -149,14 +153,14 @@ public class KeelCsvWriter implements Closeable {
      * @throws IOException 当写入过程中发生 IO 异常时抛出
      */
     public void blockWriteRow(List<String> list) throws IOException {
-        synchronized (atLineBeginningRef) {
-            if (!atLineBeginningRef.get()) {
-                writeToOutputStream("\n");
-                atLineBeginningRef.set(true);
+        synchronized (lineLock) {
+            if (!atLineBeginning) {
+                writeToOutputStream(RECORD_SEPARATOR);
+                atLineBeginning = true;
             }
             List<String> components = new ArrayList<>();
             list.forEach(item -> components.add(quote(item)));
-            var line = String.join(separator, components) + "\n";
+            var line = String.join(separator, components) + RECORD_SEPARATOR;
             writeToOutputStream(line);
         }
     }
@@ -165,8 +169,8 @@ public class KeelCsvWriter implements Closeable {
         if (s == null) {
             s = "";
         }
-        if (s.contains("\"") || s.contains("\n") || s.contains(separator)) {
-            return "\"" + s.replaceAll("\"", "\"\"") + "\"";
+        if (s.contains("\"") || s.contains("\n") || s.contains("\r") || s.contains(separator)) {
+            return "\"" + s.replace("\"", "\"\"") + "\"";
         } else {
             return s;
         }

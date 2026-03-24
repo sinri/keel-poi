@@ -6,7 +6,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
@@ -143,12 +142,14 @@ public class KeelSheetMatrix {
     /**
      * 行读取器迭代器类，用于遍历表格矩阵中的行。
      * 该类实现了迭代器接口，允许逐行访问矩阵数据。
+     * <p>
+     * 与 {@link java.util.ArrayList} 一样，本迭代器非线程安全；不得在并发环境下共享同一实例。
      *
      * @since 5.0.0
      */
     public static class RowReaderIterator<R extends KeelSheetMatrixRow> implements Iterator<R> {
         private final List<List<String>> rows;
-        private final AtomicInteger ptr = new AtomicInteger(0);
+        private int nextIndex;
         private final Function<List<String>, R> rawRow2row;
 
         /**
@@ -191,7 +192,7 @@ public class KeelSheetMatrix {
          */
         @Override
         public boolean hasNext() {
-            return this.rows.size() > ptr.get();
+            return this.rows.size() > nextIndex;
         }
 
 
@@ -203,8 +204,8 @@ public class KeelSheetMatrix {
          */
         @Override
         public R next() {
-            List<String> rawRow = this.rows.get(ptr.get());
-            ptr.incrementAndGet();
+            List<String> rawRow = this.rows.get(nextIndex);
+            nextIndex++;
             return this.rawRow2row.apply(rawRow);
         }
     }

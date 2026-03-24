@@ -16,8 +16,9 @@ public interface KeelSheetMatrixRowTemplate {
     /**
      * 创建行模板实例。
      *
-     * @param headerRow 表头行数据列表
+     * @param headerRow 表头行数据列表（列名不得重复，含空字符串多列视为同名冲突）
      * @return 行模板实例
+     * @throws IllegalArgumentException 若存在重复列名
      * @since 5.0.0
      */
     static KeelSheetMatrixRowTemplate create(List<String> headerRow) {
