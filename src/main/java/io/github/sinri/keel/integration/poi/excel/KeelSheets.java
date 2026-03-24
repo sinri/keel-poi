@@ -109,22 +109,23 @@ public class KeelSheets implements Closeable {
                                  }
                              } else {
                                  InputStream inputStream = sheetsOpenOptions.getInputStream();
-                                 if (inputStream != null) {
-                                     Workbook workbook;
-                                     Boolean useXlsx = sheetsOpenOptions.isUseXlsx();
-                                     if (useXlsx == null) {
-                                         try {
-                                             workbook = new XSSFWorkbook(inputStream);
-                                             useXlsx = true;
-                                         } catch (IOException e) {
-                                             try {
-                                                 workbook = new HSSFWorkbook(inputStream);
-                                                 useXlsx = false;
-                                             } catch (IOException ex) {
-                                                 throw new RuntimeException(ex);
-                                             }
-                                         }
-                                     } else {
+                                if (inputStream != null) {
+                                    Workbook workbook;
+                                    Boolean useXlsx = sheetsOpenOptions.isUseXlsx();
+                                    if (useXlsx == null) {
+                                        byte[] copy = inputStream.readAllBytes();
+                                        try {
+                                            workbook = new XSSFWorkbook(new ByteArrayInputStream(copy));
+                                            useXlsx = true;
+                                        } catch (IOException e) {
+                                            try {
+                                                workbook = new HSSFWorkbook(new ByteArrayInputStream(copy));
+                                                useXlsx = false;
+                                            } catch (IOException ex) {
+                                                throw new RuntimeException(ex);
+                                            }
+                                        }
+                                    } else {
                                          if (useXlsx) {
                                              workbook = new XSSFWorkbook(inputStream);
                                          } else {
@@ -160,9 +161,10 @@ public class KeelSheets implements Closeable {
                                  }
                              }
                              return usage.apply(keelSheets)
-                                         .andThen(ar -> {
+                                         .eventually(() -> {
                                              Promise<Void> promise = Promise.promise();
                                              keelSheets.close(promise);
+                                             return promise.future();
                                          });
                          } catch (IOException e) {
                              return Future.failedFuture(e);
@@ -200,9 +202,10 @@ public class KeelSheets implements Closeable {
                          }
 
                          return usage.apply(keelSheets)
-                                     .andThen(ar -> {
+                                     .eventually(() -> {
                                          Promise<Void> promise = Promise.promise();
                                          keelSheets.close(promise);
+                                         return promise.future();
                                      });
                      });
     }
@@ -321,9 +324,9 @@ public class KeelSheets implements Closeable {
      * @param file 文件
      */
     public void save(File file) {
-        try {
-            save(new FileOutputStream(file));
-        } catch (FileNotFoundException e) {
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            save(fos);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

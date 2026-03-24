@@ -77,22 +77,11 @@ public class KeelSheet {
      * @return 从索引零到最后一个非零单元格的单元格数量
      */
     private static int autoDetectNonBlankColumnCountInOneRow(Row row) {
-        short firstCellNum = row.getFirstCellNum();
-        if (firstCellNum < 0) {
+        int lastCellNum = row.getLastCellNum();
+        if (lastCellNum < 0) {
             return 0;
         }
-        int i;
-        for (i = 0; i < row.getLastCellNum(); i++) {
-            Cell cell = row.getCell(i);
-            if (cell == null) {
-                break;
-            }
-            if (cell.getCellType() != CellType.NUMERIC) {
-                String stringCellValue = cell.getStringCellValue();
-                if (stringCellValue == null || stringCellValue.isBlank()) break;
-            }
-        }
-        return i;
+        return lastCellNum;
     }
 
     /**
@@ -131,10 +120,24 @@ public class KeelSheet {
                     default -> throw new RuntimeException("FormulaResultType unknown");
                 };
             } else {
-                return cell.getStringCellValue();
+                CellType cached = cell.getCachedFormulaResultType();
+                s = switch (cached) {
+                    case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
+                    case NUMERIC -> String.valueOf(cell.getNumericCellValue());
+                    case STRING -> String.valueOf(cell.getStringCellValue());
+                    case ERROR -> String.valueOf(cell.getErrorCellValue());
+                    case BLANK -> "";
+                    default -> cell.getStringCellValue();
+                };
             }
         } else {
-            s = cell.getStringCellValue();
+            s = switch (cellType) {
+                case STRING -> cell.getStringCellValue();
+                case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
+                case ERROR -> String.valueOf(cell.getErrorCellValue());
+                case BLANK, _NONE -> "";
+                default -> cell.getStringCellValue();
+            };
         }
         return Objects.requireNonNull(s);
     }
@@ -612,7 +615,7 @@ public class KeelSheet {
         }
 
         return keel.asyncCallIteratively(matrix.getRawRowList().iterator(), rawRows -> {
-            writeAllRows(matrix.getRawRowList(), rowIndexRef.get(), 0);
+            writeAllRows(rawRows, rowIndexRef.get(), 0);
             rowIndexRef.addAndGet(rawRows.size());
             return Future.succeededFuture();
         }, 1000);
@@ -629,7 +632,10 @@ public class KeelSheet {
         writeAllRows(List.of(templatedMatrix.getTemplate().getColumnNames()), 0, 0);
         rowIndexRef.incrementAndGet();
         templatedMatrix.getRows()
-                       .forEach(templatedRow -> writeAllRows(List.of(templatedRow.getRawRow()), rowIndexRef.get(), 0));
+                       .forEach(templatedRow -> {
+                           writeAllRows(List.of(templatedRow.getRawRow()), rowIndexRef.get(), 0);
+                           rowIndexRef.incrementAndGet();
+                       });
     }
 
     /**
