@@ -28,6 +28,27 @@ class KeelSheetMatrixRowTemplateTest extends KeelJUnit5Test {
     }
 
     @Test
+    void templateDefensivelyCopiesHeaderRowAndExposesReadonlyColumnNames() {
+        List<String> headerRow = new ArrayList<>(List.of("A", "B"));
+
+        KeelSheetMatrixRowTemplate template = KeelSheetMatrixRowTemplate.create(headerRow);
+        headerRow.set(0, "changed");
+
+        assertEquals("A", template.getColumnName(0));
+        assertEquals(0, template.getColumnIndex("A"));
+        assertThrows(UnsupportedOperationException.class, () -> template.getColumnNames().set(0, "x"));
+    }
+
+    @Test
+    void templateNormalizesNullHeaderItemsConsistently() {
+        KeelSheetMatrixRowTemplate template = KeelSheetMatrixRowTemplate.create(Arrays.asList("A", null));
+
+        assertEquals("", template.getColumnName(1));
+        assertEquals(1, template.getColumnIndex(""));
+        assertEquals(List.of("A", ""), template.getColumnNames());
+    }
+
+    @Test
     void templatedRowReturnsBlankForTrailingMissingColumnByName() {
         KeelSheetMatrixRowTemplate template = KeelSheetMatrixRowTemplate.create(List.of("A", "B", "C"));
         KeelSheetMatrixTemplatedRow row = KeelSheetMatrixTemplatedRow.create(template, List.of("a", "b"));
