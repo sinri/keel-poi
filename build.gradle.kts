@@ -22,11 +22,11 @@ val developerOrganizationUrl: String by project
 
 // Dependency versions
 val jspecifyVersion: String by project
-val vertxVersion: String by project
+//val vertxVersion: String by project
 val keelCoreVersion: String by project
 val keelTestVersion: String by project
 val excelStreamingReaderVersion: String by project
-val commonsLang3Version: String by project
+//val commonsLang3Version: String by project
 
 repositories {
     // Internal Nexus repository for dependencies
@@ -48,8 +48,8 @@ dependencies {
     // Core Keel dependencies (from pom.xml)
     api("io.github.sinri:keel-core:$keelCoreVersion")
 
-    // Apache Commons (from pom.xml - fixes vulnerability in POI)
-    api("org.apache.commons:commons-lang3:$commonsLang3Version")
+    // Keep Commons Lang explicit to constrain the version used through POI-related transitive dependencies.
+//    api("org.apache.commons:commons-lang3:$commonsLang3Version")
 
     // Excel streaming reader (from pom.xml)
     api("com.github.pjfanning:excel-streaming-reader:$excelStreamingReaderVersion")
