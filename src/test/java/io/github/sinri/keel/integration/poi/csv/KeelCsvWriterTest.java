@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -264,6 +265,23 @@ class KeelCsvWriterTest extends KeelJUnit5Test {
     }
 
     @Test
+    void staticWriteClosesWriterWhenCallbackThrowsSynchronously() {
+        CloseTrackingOutputStream outputStream = new CloseTrackingOutputStream();
+        RuntimeException failure = new RuntimeException("sync failure");
+
+        Future<Void> future = KeelCsvWriter.write(
+                outputStream,
+                writer -> {
+                    throw failure;
+                }
+        );
+
+        assertTrue(future.failed());
+        assertSame(failure, future.cause());
+        assertTrue(outputStream.closed);
+    }
+
+    @Test
     void testStaticWriteMethodWithCustomSeparatorAndCharset() throws IOException {
         Path outputFile = Paths.get("src/test/resources/runtime/test-static-write-custom.csv");
         Files.createDirectories(outputFile.getParent());
@@ -368,6 +386,20 @@ class KeelCsvWriterTest extends KeelJUnit5Test {
                 assertEquals(String.valueOf(count * 10), row.getCell(2).getString());
             }
             assertEquals(rowCount, count);
+        }
+    }
+
+    private static class CloseTrackingOutputStream extends OutputStream {
+        private boolean closed;
+
+        @Override
+        public void write(int b) {
+        }
+
+        @Override
+        public void close() throws IOException {
+            closed = true;
+            super.close();
         }
     }
 }

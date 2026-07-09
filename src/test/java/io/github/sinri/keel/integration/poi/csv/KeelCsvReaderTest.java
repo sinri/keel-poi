@@ -150,6 +150,25 @@ class KeelCsvReaderTest extends KeelJUnit5Test {
     }
 
     @Test
+    void staticReadClosesReaderWhenCallbackThrowsSynchronously() {
+        CloseTrackingInputStream inputStream = new CloseTrackingInputStream("a,b\n".getBytes(StandardCharsets.UTF_8));
+        RuntimeException failure = new RuntimeException("sync failure");
+
+        Future<Void> future = KeelCsvReader.read(
+                inputStream,
+                StandardCharsets.UTF_8,
+                ",",
+                reader -> {
+                    throw failure;
+                }
+        );
+
+        assertTrue(future.failed());
+        assertSame(failure, future.cause());
+        assertTrue(inputStream.closed);
+    }
+
+    @Test
     void testNumberParsing() throws IOException {
         String csvFile = "src/test/resources/runtime/test-csv-1.csv";
         try (FileInputStream fis = new FileInputStream(csvFile);
@@ -266,6 +285,20 @@ class KeelCsvReaderTest extends KeelJUnit5Test {
             assertEquals(2, row.size());
             assertTrue(row.getCell(0).getString().contains("x"));
             assertEquals("tail", row.getCell(1).getString());
+        }
+    }
+
+    private static class CloseTrackingInputStream extends ByteArrayInputStream {
+        private boolean closed;
+
+        private CloseTrackingInputStream(byte[] buf) {
+            super(buf);
+        }
+
+        @Override
+        public void close() throws IOException {
+            closed = true;
+            super.close();
         }
     }
 }

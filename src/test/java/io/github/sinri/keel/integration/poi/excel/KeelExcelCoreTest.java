@@ -3,6 +3,7 @@ package io.github.sinri.keel.integration.poi.excel;
 import io.github.sinri.keel.core.utils.value.ValueBox;
 import io.github.sinri.keel.integration.poi.excel.entity.KeelSheetMatrix;
 import io.github.sinri.keel.tesuto.KeelJUnit5Test;
+import io.vertx.core.Completable;
 import io.vertx.core.Future;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.FormulaError;
@@ -90,6 +91,30 @@ class KeelExcelCoreTest extends KeelJUnit5Test {
             assertNotNull(s);
             assertEquals("H1", s.getRow(0).getCell(0).getStringCellValue());
             assertEquals("d", s.getRow(2).getCell(1).getStringCellValue());
+        }
+    }
+
+    @Test
+    void useAndCloseClosesSheetsWhenCallbackThrowsSynchronously() {
+        CloseTrackingKeelSheets keelSheets = new CloseTrackingKeelSheets();
+        RuntimeException failure = new RuntimeException("sync failure");
+
+        Future<Void> done = KeelSheets.<Void>useAndClose(keelSheets, sheets -> {
+            throw failure;
+        });
+
+        assertTrue(done.failed());
+        assertSame(failure, done.cause());
+        assertTrue(keelSheets.closed);
+    }
+
+    private static class CloseTrackingKeelSheets extends KeelSheets {
+        private boolean closed;
+
+        @Override
+        public void close(Completable<Void> completable) {
+            closed = true;
+            super.close(completable);
         }
     }
 }
