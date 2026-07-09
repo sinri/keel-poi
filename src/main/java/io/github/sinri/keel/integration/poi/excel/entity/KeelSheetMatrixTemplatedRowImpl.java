@@ -5,7 +5,6 @@ import org.jspecify.annotations.NullMarked;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Excel 表格模板化行实现类，实现模板化行接口。
@@ -69,7 +68,10 @@ public class KeelSheetMatrixTemplatedRowImpl implements KeelSheetMatrixTemplated
     @Override
     public String getColumnValue(String name) {
         Integer columnIndex = getTemplate().getColumnIndex(name);
-        return this.rawRow.get(Objects.requireNonNull(columnIndex));
+        if (columnIndex == null) {
+            throw new IllegalArgumentException("Unknown column name: " + name);
+        }
+        return getColumnValue(columnIndex);
     }
 
     /**
