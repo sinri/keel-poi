@@ -11,6 +11,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -266,6 +267,8 @@ public class KeelSheet {
 
     /**
      * 获取原始行迭代器。
+     * <p>
+     * 如果给定了 sheetRowFilter，则在迭代过程中应用过滤器，如果某一行被过滤，则跳过该行给出下一行。
      *
      * @param maxColumns     最大列数
      * @param sheetRowFilter 工作表行过滤器（可选）
@@ -274,15 +277,40 @@ public class KeelSheet {
     public Iterator<List<String>> getRawRowIterator(int maxColumns, @Nullable SheetRowFilter sheetRowFilter) {
         Iterator<Row> rowIterator = getRowIterator();
         return new Iterator<>() {
+            private @Nullable List<String> nextRawRow;
+            private boolean nextRawRowLoaded;
+
             @Override
             public boolean hasNext() {
-                return rowIterator.hasNext();
+                loadNextRawRowIfNeeded();
+                return nextRawRowLoaded;
             }
 
             @Override
-            public @Nullable List<String> next() {
-                Row row = rowIterator.next();
-                return dumpRowToRawRow(row, maxColumns, sheetRowFilter, formulaEvaluatorBox);
+            public List<String> next() {
+                loadNextRawRowIfNeeded();
+                if (!nextRawRowLoaded) {
+                    throw new NoSuchElementException();
+                }
+                List<String> rawRow = Objects.requireNonNull(nextRawRow);
+                nextRawRow = null;
+                nextRawRowLoaded = false;
+                return rawRow;
+            }
+
+            private void loadNextRawRowIfNeeded() {
+                if (nextRawRowLoaded) {
+                    return;
+                }
+                while (rowIterator.hasNext()) {
+                    Row row = rowIterator.next();
+                    List<String> rawRow = dumpRowToRawRow(row, maxColumns, sheetRowFilter, formulaEvaluatorBox);
+                    if (rawRow != null) {
+                        nextRawRow = rawRow;
+                        nextRawRowLoaded = true;
+                        return;
+                    }
+                }
             }
         };
     }

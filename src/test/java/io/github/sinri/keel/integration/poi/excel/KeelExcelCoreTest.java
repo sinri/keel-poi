@@ -2,6 +2,9 @@ package io.github.sinri.keel.integration.poi.excel;
 
 import io.github.sinri.keel.core.utils.value.ValueBox;
 import io.github.sinri.keel.integration.poi.excel.entity.KeelSheetMatrix;
+import io.github.sinri.keel.integration.poi.excel.entity.KeelSheetMatrixRow;
+import io.github.sinri.keel.integration.poi.excel.entity.KeelSheetMatrixRowTemplate;
+import io.github.sinri.keel.integration.poi.excel.entity.KeelSheetMatrixTemplatedRow;
 import io.github.sinri.keel.tesuto.KeelJUnit5Test;
 import io.vertx.core.Completable;
 import io.vertx.core.Future;
@@ -16,6 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -108,6 +112,54 @@ class KeelExcelCoreTest extends KeelJUnit5Test {
         assertTrue(keelSheets.closed);
     }
 
+    @Test
+    void rawRowIteratorSkipsRowsExcludedByFilter() throws Exception {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            KeelSheet keelSheet = createSheetWithBlankRowBetweenDataRows(wb);
+
+            Iterator<List<String>> iterator = keelSheet.getRawRowIterator(2, SheetRowFilter.toExcludeEmptyRows());
+
+            assertTrue(iterator.hasNext());
+            assertEquals(List.of("first", "1.0"), iterator.next());
+            assertTrue(iterator.hasNext());
+            assertEquals(List.of("second", "2.0"), iterator.next());
+            assertFalse(iterator.hasNext());
+        }
+    }
+
+    @Test
+    void matrixRowIteratorSkipsRowsExcludedByFilter() throws Exception {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            KeelSheet keelSheet = createSheetWithBlankRowBetweenDataRows(wb);
+
+            Iterator<KeelSheetMatrixRow> iterator =
+                    keelSheet.getMatrixRowIterator(2, SheetRowFilter.toExcludeEmptyRows());
+
+            assertTrue(iterator.hasNext());
+            assertEquals("first", iterator.next().readValue(0));
+            assertTrue(iterator.hasNext());
+            assertEquals("second", iterator.next().readValue(0));
+            assertFalse(iterator.hasNext());
+        }
+    }
+
+    @Test
+    void templatedMatrixRowIteratorSkipsRowsExcludedByFilter() throws Exception {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            KeelSheet keelSheet = createSheetWithBlankRowBetweenDataRows(wb);
+            KeelSheetMatrixRowTemplate template = KeelSheetMatrixRowTemplate.create(List.of("name", "amount"));
+
+            Iterator<KeelSheetMatrixTemplatedRow> iterator =
+                    keelSheet.getTemplatedMatrixRowIterator(template, 2, SheetRowFilter.toExcludeEmptyRows());
+
+            assertTrue(iterator.hasNext());
+            assertEquals("first", iterator.next().getColumnValue("name"));
+            assertTrue(iterator.hasNext());
+            assertEquals("second", iterator.next().getColumnValue("name"));
+            assertFalse(iterator.hasNext());
+        }
+    }
+
     private static class CloseTrackingKeelSheets extends KeelSheets {
         private boolean closed;
 
@@ -116,5 +168,20 @@ class KeelExcelCoreTest extends KeelJUnit5Test {
             closed = true;
             super.close(completable);
         }
+    }
+
+    private static KeelSheet createSheetWithBlankRowBetweenDataRows(XSSFWorkbook wb) {
+        Sheet sheet = wb.createSheet("filtered");
+        Row first = sheet.createRow(0);
+        first.createCell(0).setCellValue("first");
+        first.createCell(1).setCellValue(1);
+
+        sheet.createRow(1);
+
+        Row second = sheet.createRow(2);
+        second.createCell(0).setCellValue("second");
+        second.createCell(1).setCellValue(2);
+
+        return new KeelSheet(null, sheet, new ValueBox<>());
     }
 }
