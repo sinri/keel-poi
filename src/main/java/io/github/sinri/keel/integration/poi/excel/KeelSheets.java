@@ -160,12 +160,7 @@ public class KeelSheets implements Closeable {
                                      throw new IOException("No input source!!");
                                  }
                              }
-                             return usage.apply(keelSheets)
-                                         .eventually(() -> {
-                                             Promise<Void> promise = Promise.promise();
-                                             keelSheets.close(promise);
-                                             return promise.future();
-                                         });
+                             return useAndClose(keelSheets, usage);
                          } catch (IOException e) {
                              return Future.failedFuture(e);
                          }
@@ -201,12 +196,18 @@ public class KeelSheets implements Closeable {
                              keelSheets = new KeelSheets(null, new HSSFWorkbook(), sheetsCreateOptions.isWithFormulaEvaluator());
                          }
 
-                         return usage.apply(keelSheets)
-                                     .eventually(() -> {
-                                         Promise<Void> promise = Promise.promise();
-                                         keelSheets.close(promise);
-                                         return promise.future();
-                                     });
+                         return useAndClose(keelSheets, usage);
+                     });
+    }
+
+    static <T> Future<T> useAndClose(KeelSheets keelSheets, Function<KeelSheets, Future<T>> usage) {
+        // Run user code inside a Future mapper so synchronous exceptions
+        // become failed Futures and still trigger the auto-close stage.
+        return Future.succeededFuture().compose(v -> usage.apply(keelSheets))
+                     .eventually(() -> {
+                         Promise<Void> promise = Promise.promise();
+                         keelSheets.close(promise);
+                         return promise.future();
                      });
     }
 

@@ -71,7 +71,9 @@ public class KeelCsvWriter implements Closeable {
         return Future.succeededFuture()
                      .compose(v -> {
                          KeelCsvWriter writer = new KeelCsvWriter(outputStream, separator, charset);
-                         return writeCsvFunc.apply(writer).compose(
+                         // Run user code inside a Future mapper so synchronous exceptions
+                         // become failed Futures and still pass through the close branch below.
+                         return Future.succeededFuture().compose(v2 -> writeCsvFunc.apply(writer)).compose(
                                  ok -> {
                                      try {
                                          writer.close();

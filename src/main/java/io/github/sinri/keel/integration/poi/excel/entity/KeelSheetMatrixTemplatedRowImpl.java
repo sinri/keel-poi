@@ -3,9 +3,9 @@ package io.github.sinri.keel.integration.poi.excel.entity;
 import io.vertx.core.json.JsonObject;
 import org.jspecify.annotations.NullMarked;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Excel 表格模板化行实现类，实现模板化行接口。
@@ -21,6 +21,8 @@ public class KeelSheetMatrixTemplatedRowImpl implements KeelSheetMatrixTemplated
     /**
      * 构造函数，使用指定的模板和原始行数据创建模板化行实现。
      * 该构造函数为包级访问权限。
+     * <p>
+     * 构造时会保存传入行的副本；调用方后续修改原始列表不会影响本行对象。
      *
      * @param template 模板
      * @param rawRow   原始行数据
@@ -28,7 +30,7 @@ public class KeelSheetMatrixTemplatedRowImpl implements KeelSheetMatrixTemplated
      */
     KeelSheetMatrixTemplatedRowImpl(KeelSheetMatrixRowTemplate template, List<String> rawRow) {
         this.template = template;
-        this.rawRow = rawRow;
+        this.rawRow = new ArrayList<>(rawRow);
     }
 
     /**
@@ -69,11 +71,16 @@ public class KeelSheetMatrixTemplatedRowImpl implements KeelSheetMatrixTemplated
     @Override
     public String getColumnValue(String name) {
         Integer columnIndex = getTemplate().getColumnIndex(name);
-        return this.rawRow.get(Objects.requireNonNull(columnIndex));
+        if (columnIndex == null) {
+            throw new IllegalArgumentException("Unknown column name: " + name);
+        }
+        return getColumnValue(columnIndex);
     }
 
     /**
      * 获取原始行数据。
+     * <p>
+     * 返回的行列表为只读视图，不允许调用方通过该列表修改本行对象的内部状态。
      *
      * @return 原始行数据列表
      * @since 5.0.0

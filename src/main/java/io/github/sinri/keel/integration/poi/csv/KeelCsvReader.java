@@ -70,7 +70,9 @@ public class KeelCsvReader implements Closeable {
         return Future.succeededFuture()
                      .compose(v -> {
                          KeelCsvReader reader = new KeelCsvReader(inputStream, charset, separator);
-                         return readFunc.apply(reader).compose(
+                         // Run user code inside a Future mapper so synchronous exceptions
+                         // become failed Futures and still pass through the close branch below.
+                         return Future.succeededFuture().compose(v2 -> readFunc.apply(reader)).compose(
                                  ok -> {
                                      try {
                                          reader.close();

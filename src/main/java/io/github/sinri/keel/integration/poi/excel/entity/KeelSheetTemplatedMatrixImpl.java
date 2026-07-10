@@ -4,7 +4,6 @@ package io.github.sinri.keel.integration.poi.excel.entity;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,13 +31,15 @@ public class KeelSheetTemplatedMatrixImpl implements KeelSheetTemplatedMatrix {
 
     /**
      * 获取所有原始行数据列表。
+     * <p>
+     * 返回的外层列表和每一个内层行列表均为只读视图，不允许调用方通过返回值修改矩阵内部状态。
      *
      * @return 原始行数据列表
      * @since 5.0.0
      */
     @Override
     public List<List<String>> getRawRows() {
-        return Collections.unmodifiableList(rawRows);
+        return KeelSheetMatrix.unmodifiableRows(rawRows);
     }
 
     /**
@@ -79,6 +80,8 @@ public class KeelSheetTemplatedMatrixImpl implements KeelSheetTemplatedMatrix {
 
     /**
      * 添加原始行数据。
+     * <p>
+     * 本方法会保存传入行的副本；调用方后续修改原始列表不会影响矩阵内部状态。
      *
      * @param rawRow 原始行数据
      * @return 当前模板化矩阵实例，支持链式调用
@@ -86,7 +89,7 @@ public class KeelSheetTemplatedMatrixImpl implements KeelSheetTemplatedMatrix {
      */
     @Override
     public KeelSheetTemplatedMatrix addRawRow(List<String> rawRow) {
-        this.rawRows.add(rawRow);
+        this.rawRows.add(new ArrayList<>(rawRow));
         return this;
     }
 }

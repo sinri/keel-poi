@@ -3,6 +3,8 @@ package io.github.sinri.keel.integration.poi.excel.entity;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,15 +24,18 @@ public class KeelSheetMatrixRowTemplateImpl implements KeelSheetMatrixRowTemplat
     /**
      * 构造函数，使用指定的表头行数据创建行模板实现。
      * 该构造函数为包级访问权限。
+     * <p>
+     * 构造时会复制并归一化表头行；调用方后续修改原始列表不会影响模板内部状态。
      *
      * @param headerRow 表头行数据列表
      * @since 5.0.0
      */
     KeelSheetMatrixRowTemplateImpl(List<String> headerRow) {
-        this.headerRow = headerRow;
+        this.headerRow = new ArrayList<>(headerRow.size());
         this.headerMap = new LinkedHashMap<>();
         for (int i = 0; i < headerRow.size(); i++) {
             String key = Objects.requireNonNullElse(headerRow.get(i), "");
+            this.headerRow.add(key);
             if (headerMap.containsKey(key)) {
                 throw new IllegalArgumentException(
                         "Duplicate column name in header: \"" + key + "\" at index " + i
@@ -67,12 +72,14 @@ public class KeelSheetMatrixRowTemplateImpl implements KeelSheetMatrixRowTemplat
 
     /**
      * 获取所有列名列表。
+     * <p>
+     * 返回的列名列表为只读视图，不允许调用方通过该列表修改模板内部状态。
      *
      * @return 列名列表
      * @since 5.0.0
      */
     @Override
     public List<String> getColumnNames() {
-        return headerRow;
+        return Collections.unmodifiableList(headerRow);
     }
 }

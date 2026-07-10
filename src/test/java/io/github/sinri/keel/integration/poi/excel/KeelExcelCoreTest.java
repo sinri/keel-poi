@@ -2,19 +2,27 @@ package io.github.sinri.keel.integration.poi.excel;
 
 import io.github.sinri.keel.core.utils.value.ValueBox;
 import io.github.sinri.keel.integration.poi.excel.entity.KeelSheetMatrix;
+import io.github.sinri.keel.integration.poi.excel.entity.KeelSheetMatrixRow;
+import io.github.sinri.keel.integration.poi.excel.entity.KeelSheetMatrixRowTemplate;
+import io.github.sinri.keel.integration.poi.excel.entity.KeelSheetMatrixTemplatedRow;
 import io.github.sinri.keel.tesuto.KeelJUnit5Test;
+import io.vertx.core.Completable;
 import io.vertx.core.Future;
+import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.FormulaError;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Base64;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -25,6 +33,9 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @NullMarked
 class KeelExcelCoreTest extends KeelJUnit5Test {
+    private static final byte[] ONE_PIXEL_PNG = Base64.getDecoder().decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII="
+    );
 
     KeelExcelCoreTest() {
         super();
@@ -90,6 +101,182 @@ class KeelExcelCoreTest extends KeelJUnit5Test {
             assertNotNull(s);
             assertEquals("H1", s.getRow(0).getCell(0).getStringCellValue());
             assertEquals("d", s.getRow(2).getCell(1).getStringCellValue());
+        }
+    }
+
+    @Test
+    void useAndCloseClosesSheetsWhenCallbackThrowsSynchronously() {
+        CloseTrackingKeelSheets keelSheets = new CloseTrackingKeelSheets();
+        RuntimeException failure = new RuntimeException("sync failure");
+
+        Future<Void> done = KeelSheets.<Void>useAndClose(keelSheets, sheets -> {
+            throw failure;
+        });
+
+        assertTrue(done.failed());
+        assertSame(failure, done.cause());
+        assertTrue(keelSheets.closed);
+    }
+
+    @Test
+    void rawRowIteratorSkipsRowsExcludedByFilter() throws Exception {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            KeelSheet keelSheet = createSheetWithBlankRowBetweenDataRows(wb);
+
+            Iterator<List<String>> iterator = keelSheet.getRawRowIterator(2, SheetRowFilter.toExcludeEmptyRows());
+
+            assertTrue(iterator.hasNext());
+            assertEquals(List.of("first", "1.0"), iterator.next());
+            assertTrue(iterator.hasNext());
+            assertEquals(List.of("second", "2.0"), iterator.next());
+            assertFalse(iterator.hasNext());
+        }
+    }
+
+    @Test
+    void matrixRowIteratorSkipsRowsExcludedByFilter() throws Exception {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            KeelSheet keelSheet = createSheetWithBlankRowBetweenDataRows(wb);
+
+            Iterator<KeelSheetMatrixRow> iterator =
+                    keelSheet.getMatrixRowIterator(2, SheetRowFilter.toExcludeEmptyRows());
+
+            assertTrue(iterator.hasNext());
+            assertEquals("first", iterator.next().readValue(0));
+            assertTrue(iterator.hasNext());
+            assertEquals("second", iterator.next().readValue(0));
+            assertFalse(iterator.hasNext());
+        }
+    }
+
+    @Test
+    void templatedMatrixRowIteratorSkipsRowsExcludedByFilter() throws Exception {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            KeelSheet keelSheet = createSheetWithBlankRowBetweenDataRows(wb);
+            KeelSheetMatrixRowTemplate template = KeelSheetMatrixRowTemplate.create(List.of("name", "amount"));
+
+            Iterator<KeelSheetMatrixTemplatedRow> iterator =
+                    keelSheet.getTemplatedMatrixRowIterator(template, 2, SheetRowFilter.toExcludeEmptyRows());
+
+            assertTrue(iterator.hasNext());
+            assertEquals("first", iterator.next().getColumnValue("name"));
+            assertTrue(iterator.hasNext());
+            assertEquals("second", iterator.next().getColumnValue("name"));
+            assertFalse(iterator.hasNext());
+        }
+    }
+
+    @Test
+    void hugeXlsxStreamingReaderReadsBasicSheetData() throws Exception {
+        Path tmp = Files.createTempFile("keel-poi-streaming-", ".xlsx");
+        tmp.toFile().deleteOnExit();
+        writeBasicWorkbook(tmp);
+
+        SheetsOpenOptions options = new SheetsOpenOptions()
+                .setFile(tmp.toFile())
+                .setHugeXlsxStreamingReaderBuilder(builder -> builder.rowCacheSize(2));
+
+        Future<List<String>> done = KeelSheets.useSheets(options, sheets -> {
+            KeelSheet sheet = sheets.generateReaderForSheet("Data");
+            Iterator<List<String>> iterator = sheet.getRawRowIterator(2, null);
+
+            assertTrue(iterator.hasNext());
+            assertEquals(List.of("Name", "Value"), iterator.next());
+            assertTrue(iterator.hasNext());
+            return Future.succeededFuture(iterator.next());
+        });
+
+        List<String> dataRow = done.toCompletionStage().toCompletableFuture().get(30, TimeUnit.SECONDS);
+        assertEquals(List.of("stream", "42.0"), dataRow);
+    }
+
+    @Test
+    void xlsxPictureExtractionReturnsEmbeddedPictureMetadataAndDataCopy() throws Exception {
+        Path tmp = Files.createTempFile("keel-poi-picture-", ".xlsx");
+        tmp.toFile().deleteOnExit();
+        writeWorkbookWithPicture(tmp);
+
+        SheetsOpenOptions options = new SheetsOpenOptions()
+                .setFile(tmp.toFile())
+                .setUseXlsx(true);
+
+        Future<List<KeelPictureInSheet>> done = KeelSheets.useSheets(options, sheets -> {
+            KeelSheet sheet = sheets.generateReaderForSheet("Pictures");
+            return Future.succeededFuture(sheet.getPictures());
+        });
+
+        List<KeelPictureInSheet> pictures = done.toCompletionStage().toCompletableFuture().get(30, TimeUnit.SECONDS);
+        assertEquals(1, pictures.size());
+
+        KeelPictureInSheet picture = pictures.get(0);
+        assertEquals(1, picture.getAtRow());
+        assertEquals(1, picture.getAtCol());
+        assertEquals("png", picture.getSuggestFileExtension());
+        assertEquals("image/png", picture.getMimeType());
+        assertArrayEquals(ONE_PIXEL_PNG, picture.getData());
+
+        byte[] returnedData = picture.getData();
+        returnedData[0] = 0;
+        assertArrayEquals(ONE_PIXEL_PNG, picture.getData());
+    }
+
+    private static class CloseTrackingKeelSheets extends KeelSheets {
+        private boolean closed;
+
+        @Override
+        public void close(Completable<Void> completable) {
+            closed = true;
+            super.close(completable);
+        }
+    }
+
+    private static KeelSheet createSheetWithBlankRowBetweenDataRows(XSSFWorkbook wb) {
+        Sheet sheet = wb.createSheet("filtered");
+        Row first = sheet.createRow(0);
+        first.createCell(0).setCellValue("first");
+        first.createCell(1).setCellValue(1);
+
+        sheet.createRow(1);
+
+        Row second = sheet.createRow(2);
+        second.createCell(0).setCellValue("second");
+        second.createCell(1).setCellValue(2);
+
+        return new KeelSheet(null, sheet, new ValueBox<>());
+    }
+
+    private static void writeBasicWorkbook(Path path) throws Exception {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            Sheet sheet = wb.createSheet("Data");
+            Row header = sheet.createRow(0);
+            header.createCell(0).setCellValue("Name");
+            header.createCell(1).setCellValue("Value");
+
+            Row row = sheet.createRow(1);
+            row.createCell(0).setCellValue("stream");
+            row.createCell(1).setCellValue(42);
+
+            try (var outputStream = Files.newOutputStream(path)) {
+                wb.write(outputStream);
+            }
+        }
+    }
+
+    private static void writeWorkbookWithPicture(Path path) throws Exception {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            Sheet sheet = wb.createSheet("Pictures");
+            int pictureIndex = wb.addPicture(ONE_PIXEL_PNG, Workbook.PICTURE_TYPE_PNG);
+            var drawing = sheet.createDrawingPatriarch();
+            ClientAnchor anchor = wb.getCreationHelper().createClientAnchor();
+            anchor.setRow1(0);
+            anchor.setCol1(0);
+            anchor.setRow2(1);
+            anchor.setCol2(1);
+            drawing.createPicture(anchor, pictureIndex);
+
+            try (var outputStream = Files.newOutputStream(path)) {
+                wb.write(outputStream);
+            }
         }
     }
 }

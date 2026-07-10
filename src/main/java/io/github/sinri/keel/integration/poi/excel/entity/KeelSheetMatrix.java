@@ -33,25 +33,29 @@ public class KeelSheetMatrix {
 
     /**
      * 向矩阵中添加一行数据。
+     * <p>
+     * 本方法会保存传入行的副本；调用方后续修改原始列表不会影响矩阵内部状态。
      *
      * @param row 要添加的数据行
      * @return 当前矩阵实例，支持链式调用
      * @since 5.0.0
      */
     public KeelSheetMatrix addRow(List<String> row) {
-        this.rows.add(row);
+        this.rows.add(copyRow(row));
         return this;
     }
 
     /**
      * 向矩阵中添加多行数据。
+     * <p>
+     * 本方法会逐行保存副本；调用方后续修改原始列表或其中的行列表不会影响矩阵内部状态。
      *
      * @param rows 要添加的数据行列表
      * @return 当前矩阵实例，支持链式调用
      * @since 5.0.0
      */
     public KeelSheetMatrix addRows(List<List<String>> rows) {
-        this.rows.addAll(rows);
+        rows.forEach(this::addRow);
         return this;
     }
 
@@ -81,23 +85,37 @@ public class KeelSheetMatrix {
 
     /**
      * 获取指定索引的原始行数据。
+     * <p>
+     * 返回的行列表为只读视图，不允许调用方通过该列表修改矩阵内部状态。
      *
      * @param i 行数据的索引
      * @return 指定索引的原始行数据
      * @since 5.0.0
      */
     public List<String> getRawRow(int i) {
-        return this.rows.get(i);
+        return Collections.unmodifiableList(this.rows.get(i));
     }
 
     /**
      * 获取所有原始行数据列表。
+     * <p>
+     * 返回的外层列表和每一个内层行列表均为只读视图，不允许调用方通过返回值修改矩阵内部状态。
      *
      * @return 原始行数据列表
      * @since 5.0.0
      */
     public List<List<String>> getRawRowList() {
-        return Collections.unmodifiableList(rows);
+        return unmodifiableRows(rows);
+    }
+
+    private static List<String> copyRow(List<String> row) {
+        return new ArrayList<>(row);
+    }
+
+    static List<List<String>> unmodifiableRows(List<List<String>> rows) {
+        List<List<String>> copiedRows = new ArrayList<>(rows.size());
+        rows.forEach(row -> copiedRows.add(Collections.unmodifiableList(row)));
+        return Collections.unmodifiableList(copiedRows);
     }
 
     /**
