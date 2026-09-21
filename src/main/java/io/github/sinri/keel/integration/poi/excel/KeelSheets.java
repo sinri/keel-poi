@@ -7,6 +7,7 @@ import io.vertx.core.Completable;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -113,11 +114,12 @@ public class KeelSheets implements Closeable {
                                     Workbook workbook;
                                     Boolean useXlsx = sheetsOpenOptions.isUseXlsx();
                                     if (useXlsx == null) {
+                                        // 未显式指定使用 XLSX 与否，需要自动回退
                                         byte[] copy = inputStream.readAllBytes();
                                         try {
                                             workbook = new XSSFWorkbook(new ByteArrayInputStream(copy));
                                             useXlsx = true;
-                                        } catch (IOException e) {
+                                        } catch (IOException | OLE2NotOfficeXmlFileException e) {
                                             try {
                                                 workbook = new HSSFWorkbook(new ByteArrayInputStream(copy));
                                                 useXlsx = false;
