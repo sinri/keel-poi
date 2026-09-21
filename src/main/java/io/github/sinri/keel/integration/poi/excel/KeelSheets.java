@@ -7,7 +7,6 @@ import io.vertx.core.Completable;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -83,6 +82,15 @@ public class KeelSheets implements Closeable {
      * 使用指定的打开选项打开 Excel 工作簿，并在使用完成后自动关闭。
      * 该方法会自动管理工作簿的生命周期，确保在操作完成后关闭工作簿。
      *
+     * <p>
+     * 通过输入流打开时，原始输入流始终由调用方拥有并负责关闭；本方法在打开成功、
+     * 打开失败或用户回调失败时均不会关闭原始流，此约定也适用于流式读取。
+     * 调用方必须保持输入流可用，直到返回的 Future 完成后再关闭。
+     * 读取会推进流的位置，不保证可以重读；不要在 Future 完成前退出关闭该流的 try-with-resources。
+     * <p>
+     * 通过文件打开时，本方法负责管理内部打开的资源。自动格式识别使用
+     * {@link WorkbookFactory#create(InputStream)}，不额外复制完整输入，但普通工作簿仍会占用内存。
+     *
      * @param sheetsOpenOptions 打开工作簿的选项
      * @param usage             使用工作簿的函数
      * @return 表示操作完成的 Future
@@ -91,13 +99,15 @@ public class KeelSheets implements Closeable {
         return Future.succeededFuture()
                      .compose(v -> {
                          try {
+                             InputStream originalInput = sheetsOpenOptions.getInputStream();
+                             InputStream inputStream = originalInput == null ? null : leaveOpen(originalInput);
                              KeelSheets keelSheets;
                              if (sheetsOpenOptions.isUseHugeXlsxStreamReading()) {
-                                 if (sheetsOpenOptions.getInputStream() != null) {
+                                 if (inputStream != null) {
                                      keelSheets = new KeelSheets(
                                              KeelSheetsReaderType.XLSX_STREAMING,
                                              sheetsOpenOptions.getHugeXlsxStreamingReaderBuilder()
-                                                              .open(sheetsOpenOptions.getInputStream())
+                                                              .open(inputStream)
                                      );
                                  } else if (sheetsOpenOptions.getFile() != null) {
                                      keelSheets = new KeelSheets(
@@ -109,23 +119,20 @@ public class KeelSheets implements Closeable {
                                      throw new IOException("No input source!");
                                  }
                              } else {
-                                 InputStream inputStream = sheetsOpenOptions.getInputStream();
                                 if (inputStream != null) {
                                     Workbook workbook;
                                     Boolean useXlsx = sheetsOpenOptions.isUseXlsx();
                                     if (useXlsx == null) {
-                                        // 未显式指定使用 XLSX 与否，需要自动回退
-                                        byte[] copy = inputStream.readAllBytes();
-                                        try {
-                                            workbook = new XSSFWorkbook(new ByteArrayInputStream(copy));
+                                        Workbook workbookAutoMade = WorkbookFactory.create(inputStream);
+                                        if (workbookAutoMade instanceof XSSFWorkbook) {
+                                            workbook = workbookAutoMade;
                                             useXlsx = true;
-                                        } catch (IOException | OLE2NotOfficeXmlFileException e) {
-                                            try {
-                                                workbook = new HSSFWorkbook(new ByteArrayInputStream(copy));
-                                                useXlsx = false;
-                                            } catch (IOException ex) {
-                                                throw new RuntimeException(ex);
-                                            }
+                                        } else if (workbookAutoMade instanceof HSSFWorkbook) {
+                                            workbook = workbookAutoMade;
+                                            useXlsx = false;
+                                        } else {
+                                            workbookAutoMade.close();
+                                            throw new RuntimeException("Workbook instance of class "+workbookAutoMade.getClass().getName()+" is not supported.");
                                         }
                                     } else {
                                          if (useXlsx) {
@@ -167,6 +174,18 @@ public class KeelSheets implements Closeable {
                              return Future.failedFuture(e);
                          }
                      });
+    }
+
+    /**
+     * 隔离底层读取器的关闭操作，原始输入流由调用方管理。
+     */
+    private static InputStream leaveOpen(InputStream input) {
+        return new FilterInputStream(input) {
+            @Override
+            public void close() {
+                // Workbook 仍正常关闭，但不向调用方的输入流传播 close。
+            }
+        };
     }
 
     /**
