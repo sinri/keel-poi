@@ -101,7 +101,14 @@ public class SheetsOpenOptions {
     }
 
     /**
-     * 设置要读取的输入流。
+     * 设置要读取的输入流，并清除已设置的文件来源。
+     * <p>
+     * 输入流由调用方拥有并负责关闭。无论普通读取或流式读取、打开成功或失败，
+     * {@link KeelSheets#useSheets(SheetsOpenOptions, java.util.function.Function)}
+     * 均不会关闭此原始输入流；工作簿及其内部资源仍由 KeelSheets 自动关闭。
+     * <p>
+     * 调用方必须等 useSheets 返回的 Future 完成后再关闭输入流，不得提前退出
+     * 关闭该流的 try-with-resources。读取会改变流的位置，保持打开不代表能够重新读取。
      *
      * @param inputStream 要读取的输入流
      * @return 当前选项实例，支持链式调用

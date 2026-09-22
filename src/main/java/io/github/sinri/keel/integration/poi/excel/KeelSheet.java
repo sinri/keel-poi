@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -350,7 +351,9 @@ public class KeelSheet {
     /**
      * 以阻塞方式读取所有行并转换为矩阵，表头行之前的行将被丢弃！
      *
-     * @param headerRowIndex 表头行索引，0 表示第一行，依此类推
+     * 表头行不存在时以 IllegalArgumentException 失败，异常消息包含工作表名和 0-based 行索引。
+     *
+     * @param headerRowIndex 工作表实际表头行索引（不忽略未创建的行），0 表示第一行，依此类推
      * @param maxColumns     预设列数，如果需要自动检测则为零或负数
      * @param sheetRowFilter 工作表行过滤器（可选）
      * @return 读取的矩阵对象
@@ -359,7 +362,7 @@ public class KeelSheet {
         if (headerRowIndex < 0) throw new IllegalArgumentException("headerRowIndex less than zero");
 
         KeelSheetMatrix keelSheetMatrix = new KeelSheetMatrix();
-        AtomicInteger rowIndex = new AtomicInteger(0);
+        AtomicBoolean headerFound = new AtomicBoolean();
 
         AtomicInteger checkColumnsRef = new AtomicInteger();
         if (maxColumns > 0) {
@@ -367,7 +370,7 @@ public class KeelSheet {
         }
 
         readAllRows(row -> {
-            int currentRowIndex = rowIndex.get();
+            int currentRowIndex = row.getRowNum();
             if (headerRowIndex == currentRowIndex) {
                 if (checkColumnsRef.get() == 0) {
                     checkColumnsRef.set(autoDetectNonBlankColumnCountInOneRow(row));
@@ -377,16 +380,18 @@ public class KeelSheet {
                     throw new NullPointerException("Header Row is not valid");
                 }
                 keelSheetMatrix.setHeaderRow(headerRow);
+                headerFound.set(true);
             } else if (headerRowIndex < currentRowIndex) {
+                requireHeaderRow(headerFound.get(), headerRowIndex);
                 var x = dumpRowToRawRow(row, checkColumnsRef.get(), sheetRowFilter, formulaEvaluatorBox);
                 if (x != null) {
                     keelSheetMatrix.addRow(x);
                 }
             }
 
-            rowIndex.incrementAndGet();
         });
 
+        requireHeaderRow(headerFound.get(), headerRowIndex);
         return keelSheetMatrix;
     }
 
@@ -402,7 +407,9 @@ public class KeelSheet {
     /**
      * 以阻塞方式读取所有行并转换为模板化矩阵，表头行之前的行将被丢弃！
      *
-     * @param headerRowIndex 表头行索引，0 表示第一行，依此类推
+     * 表头行不存在时以 IllegalArgumentException 失败，异常消息包含工作表名和 0-based 行索引。
+     *
+     * @param headerRowIndex 工作表实际表头行索引（不忽略未创建的行），0 表示第一行，依此类推
      * @param maxColumns     预设列数，如果需要自动检测则为零或负数
      * @param sheetRowFilter 工作表行过滤器（可选）
      * @return 读取的模板化矩阵对象
@@ -415,12 +422,12 @@ public class KeelSheet {
             checkColumnsRef.set(maxColumns);
         }
 
-        AtomicInteger rowIndex = new AtomicInteger(0);
+        AtomicBoolean headerFound = new AtomicBoolean();
         AtomicReference<@Nullable KeelSheetTemplatedMatrix> templatedMatrixRef = new AtomicReference<>();
 
 
         readAllRows(row -> {
-            int currentRowIndex = rowIndex.get();
+            int currentRowIndex = row.getRowNum();
             if (currentRowIndex == headerRowIndex) {
                 if (checkColumnsRef.get() == 0) {
                     checkColumnsRef.set(autoDetectNonBlankColumnCountInOneRow(row));
@@ -431,15 +438,17 @@ public class KeelSheet {
                 KeelSheetMatrixRowTemplate rowTemplate = KeelSheetMatrixRowTemplate.create(rowDatum);
                 KeelSheetTemplatedMatrix templatedMatrix = KeelSheetTemplatedMatrix.create(rowTemplate);
                 templatedMatrixRef.set(templatedMatrix);
+                headerFound.set(true);
             } else if (currentRowIndex > headerRowIndex) {
+                requireHeaderRow(headerFound.get(), headerRowIndex);
                 var rowDatum = dumpRowToRawRow(row, checkColumnsRef.get(), sheetRowFilter, formulaEvaluatorBox);
                 if (rowDatum != null) {
                     var r = templatedMatrixRef.get();
                     Objects.requireNonNull(r).addRawRow(rowDatum);
                 }
             }
-            rowIndex.incrementAndGet();
         });
+        requireHeaderRow(headerFound.get(), headerRowIndex);
         var r = templatedMatrixRef.get();
         return Objects.requireNonNull(r);
     }
@@ -484,7 +493,9 @@ public class KeelSheet {
     /**
      * 异步读取所有行并转换为矩阵，表头行之前的行将被丢弃！
      *
-     * @param headerRowIndex 表头行索引，0 表示第一行，依此类推
+     * 表头行不存在时以 IllegalArgumentException 失败，异常消息包含工作表名和 0-based 行索引。
+     *
+     * @param headerRowIndex 工作表实际表头行索引（不忽略未创建的行），0 表示第一行，依此类推
      * @param maxColumns     预设列数，如果需要自动检测则为零或负数
      * @param sheetRowFilter 工作表行过滤器（可选）
      * @return 表示矩阵读取完成的 Future
@@ -498,11 +509,11 @@ public class KeelSheet {
         }
 
         KeelSheetMatrix keelSheetMatrix = new KeelSheetMatrix();
-        AtomicInteger rowIndex = new AtomicInteger(0);
+        AtomicBoolean headerFound = new AtomicBoolean();
 
         return readAllRowsAsync(keel, rows -> {
             rows.forEach(row -> {
-                int currentRowIndex = rowIndex.get();
+                int currentRowIndex = row.getRowNum();
                 if (headerRowIndex == currentRowIndex) {
                     if (checkColumnsRef.get() == 0) {
                         checkColumnsRef.set(autoDetectNonBlankColumnCountInOneRow(row));
@@ -512,17 +523,21 @@ public class KeelSheet {
                         throw new NullPointerException("Header Row is not valid");
                     }
                     keelSheetMatrix.setHeaderRow(headerRow);
+                    headerFound.set(true);
                 } else if (headerRowIndex < currentRowIndex) {
+                    requireHeaderRow(headerFound.get(), headerRowIndex);
                     List<String> rawRow = dumpRowToRawRow(row, checkColumnsRef.get(), sheetRowFilter, formulaEvaluatorBox);
                     if (rawRow != null) {
                         keelSheetMatrix.addRow(rawRow);
                     }
                 }
-                rowIndex.incrementAndGet();
             });
             return Future.succeededFuture();
         }, 1000)
-                .compose(v -> Future.succeededFuture(keelSheetMatrix));
+                .compose(v -> {
+                    requireHeaderRow(headerFound.get(), headerRowIndex);
+                    return Future.succeededFuture(keelSheetMatrix);
+                });
     }
 
     /**
@@ -537,7 +552,9 @@ public class KeelSheet {
     /**
      * 异步读取所有行并转换为模板化矩阵，表头行之前的行将被丢弃！
      *
-     * @param headerRowIndex 表头行索引，0 表示第一行，依此类推
+     * 表头行不存在时以 IllegalArgumentException 失败，异常消息包含工作表名和 0-based 行索引。
+     *
+     * @param headerRowIndex 工作表实际表头行索引（不忽略未创建的行），0 表示第一行，依此类推
      * @param maxColumns     预设列数，如果需要自动检测则为零或负数
      * @param sheetRowFilter 工作表行过滤器（可选）
      * @return 表示模板化矩阵读取完成的 Future
@@ -550,12 +567,12 @@ public class KeelSheet {
             checkColumnsRef.set(maxColumns);
         }
 
-        AtomicInteger rowIndex = new AtomicInteger(0);
+        AtomicBoolean headerFound = new AtomicBoolean();
         AtomicReference<@Nullable KeelSheetTemplatedMatrix> templatedMatrixRef = new AtomicReference<>();
 
         return readAllRowsAsync(keel, rows -> {
             rows.forEach(row -> {
-                int currentRowIndex = rowIndex.get();
+                int currentRowIndex = row.getRowNum();
                 if (currentRowIndex == headerRowIndex) {
                     if (checkColumnsRef.get() == 0) {
                         checkColumnsRef.set(autoDetectNonBlankColumnCountInOneRow(row));
@@ -568,23 +585,32 @@ public class KeelSheet {
                     KeelSheetMatrixRowTemplate rowTemplate = KeelSheetMatrixRowTemplate.create(rowDatum);
                     KeelSheetTemplatedMatrix templatedMatrix = KeelSheetTemplatedMatrix.create(rowTemplate);
                     templatedMatrixRef.set(templatedMatrix);
+                    headerFound.set(true);
                 } else if (currentRowIndex > headerRowIndex) {
+                    requireHeaderRow(headerFound.get(), headerRowIndex);
                     List<String> rowDatum = dumpRowToRawRow(row, checkColumnsRef.get(), sheetRowFilter, formulaEvaluatorBox);
                     if (rowDatum != null) {
                         KeelSheetTemplatedMatrix matrix = templatedMatrixRef.get();
                         Objects.requireNonNull(matrix).addRawRow(rowDatum);
                     }
                 }
-                rowIndex.incrementAndGet();
             });
             return Future.succeededFuture();
         }, 1000)
                 .compose(v -> {
+                    requireHeaderRow(headerFound.get(), headerRowIndex);
                     KeelSheetTemplatedMatrix r = templatedMatrixRef.get();
                     return Future.succeededFuture(Objects.requireNonNull(r));
                 });
     }
 
+
+    private void requireHeaderRow(boolean headerFound, int headerRowIndex) {
+        if (!headerFound) {
+            throw new IllegalArgumentException("Header row not found: sheet=" + sheet.getSheetName()
+                    + ", headerRowIndex=" + headerRowIndex + " (0-based)");
+        }
+    }
 
     /**
      * 以阻塞方式将行数据写入工作表，从指定的行索引和单元格索引开始。

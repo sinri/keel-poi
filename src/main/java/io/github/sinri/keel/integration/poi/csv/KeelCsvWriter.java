@@ -7,6 +7,7 @@ import org.jspecify.annotations.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -19,6 +20,8 @@ import java.util.function.Function;
  * <p>
  * 推荐使用静态方法 {@link KeelCsvWriter#write(OutputStream, String, Charset, Function)} 或
  * {@link KeelCsvWriter#write(OutputStream, Function)}。
+ * <p>
+ * 字符编码器在整个写入器生命周期内复用；数据可能被缓冲，关闭时写出并关闭底层输出流。
  *
  * @since 5.0.0
  */
@@ -29,11 +32,10 @@ public class KeelCsvWriter implements Closeable {
      */
     private static final String RECORD_SEPARATOR = "\r\n";
 
-    private final OutputStream outputStream;
+    private final OutputStreamWriter outputWriter;
     private final Object lineLock = new Object();
     private boolean atLineBeginning = true;
     private final String separator;
-    private final Charset charset;
 
     public KeelCsvWriter(OutputStream outputStream) {
         this(outputStream, ",", StandardCharsets.UTF_8);
@@ -47,9 +49,8 @@ public class KeelCsvWriter implements Closeable {
      * @param charset      CSV 文件的字符集
      */
     public KeelCsvWriter(OutputStream outputStream, String separator, Charset charset) {
-        this.outputStream = outputStream;
+        this.outputWriter = new OutputStreamWriter(outputStream, charset);
         this.separator = separator;
-        this.charset = charset;
     }
 
     /**
@@ -143,7 +144,7 @@ public class KeelCsvWriter implements Closeable {
     }
 
     private void writeToOutputStream(String anything) throws IOException {
-        outputStream.write(anything.getBytes(charset));
+        outputWriter.write(anything);
     }
 
     /**
@@ -179,12 +180,14 @@ public class KeelCsvWriter implements Closeable {
     }
 
     /**
-     * 关闭 CSV 写入器，释放相关资源。
+     * 写出缓冲数据并关闭 CSV 写入器及底层输出流。
      *
      * @throws IOException 当关闭过程中发生 IO 异常时抛出
      */
     @Override
     public void close() throws IOException {
-        this.outputStream.close();
+        synchronized (lineLock) {
+            this.outputWriter.close();
+        }
     }
 }
