@@ -95,75 +95,72 @@ public class KeelCsvReader implements Closeable {
 
 
     /**
-     * 从 CSV 源中读取并解析下一行数据。
+     * 从 CSV 源中读取并解析下一行数据。引号内的 CR、LF 和 CRLF 原样保留，
+     * 引号外的 CR、LF 和 CRLF 作为记录边界。
      *
      * @return 解析后的 CSV 行对象，如果没有更多行则返回 null
      * @throws IOException 当 CSV 源发生 IO 异常时抛出
      */
     public @Nullable CsvRow next() throws IOException {
-        String line = br.readLine();
-        if (line == null) return null;
-        return consumeOneLine(null, null, 0, line);
+        int current = br.read();
+        if (current == -1) return null;
+
+        CsvRow row = new CsvRow();
+        StringBuilder buffer = new StringBuilder();
+        // 0: unquoted, 1: inside quotes, 2: after a closing quote.
+        int quoteState = 0;
+        while (current != -1) {
+            char c = (char) current;
+            if (quoteState != 1 && (c == '\r' || c == '\n')) {
+                if (c == '\r') {
+                    br.mark(1);
+                    if (br.read() != '\n') br.reset();
+                }
+                break;
+            }
+            if (c == '"') {
+                if (quoteState == 0) {
+                    quoteState = 1;
+                } else if (quoteState == 1) {
+                    quoteState = 2;
+                } else {
+                    buffer.append(c);
+                    quoteState = 1;
+                }
+            } else if (consumeSeparator(c)) {
+                if (quoteState != 1) {
+                    row.addCell(new CsvCell(buffer.toString()));
+                    buffer.setLength(0);
+                    quoteState = 0;
+                } else {
+                    buffer.append(separator);
+                }
+            } else {
+                buffer.append(c);
+            }
+            current = br.read();
+        }
+        row.addCell(new CsvCell(buffer.toString()));
+        return row;
     }
 
     /**
-     * @param row        the uncompleted row instance, if existed
-     * @param buffer     the cell content buffer, if existed
-     * @param quoterFlag Three options: 0,1,2
-     *                   <p> + aaa,bbb
-     *                   <p> - 0000000
-     *                   <p> + ,"aa""bb",
-     *                   <p> - 0111211122
-     * @param line       the raw text of the line
-     * @return the parsed row instance; may be incompleted during recursion.
+     * Match a separator without consuming a partial match or a record boundary.
      */
-    private CsvRow consumeOneLine(@Nullable CsvRow row, @Nullable StringBuilder buffer, int quoterFlag, String line) throws IOException {
-        if (row == null) {
-            row = new CsvRow();
-        }
-        if (buffer == null) {
-            buffer = new StringBuilder();
-        }
+    private boolean consumeSeparator(char first) throws IOException {
+        if (separator.isEmpty() || first != separator.charAt(0)
+                || first == '\r' || first == '\n') return false;
+        if (separator.length() == 1) return true;
 
-        while (true) {
-            for (int i = 0; i < line.length(); i++) {
-                char c = line.charAt(i);
-                if (c == '"') {
-                    if (quoterFlag == 0) {
-                        quoterFlag = 1;
-                    } else if (quoterFlag == 1) {
-                        quoterFlag = 2;
-                    } else {
-                        buffer.append(c);
-                        quoterFlag = 1;
-                    }
-                } else if (!separator.isEmpty()
-                        && i + separator.length() <= line.length()
-                        && line.regionMatches(i, separator, 0, separator.length())) {
-                    if (quoterFlag == 0 || quoterFlag == 2) {
-                        row.addCell(new CsvCell(buffer.toString()));
-                        quoterFlag = 0;
-                        buffer = new StringBuilder();
-                    } else {
-                        buffer.append(separator);
-                    }
-                    i += separator.length() - 1;
-                } else {
-                    buffer.append(c);
-                }
-            }
-
-            if (quoterFlag == 0 || quoterFlag == 2) {
-                row.addCell(new CsvCell(buffer.toString()));
-                return row;
-            }
-            buffer.append("\n");
-            line = br.readLine();
-            if (line == null) {
-                row.addCell(new CsvCell(buffer.toString()));
-                return row;
+        br.mark(separator.length());
+        for (int i = 1; i < separator.length(); i++) {
+            int next = br.read();
+            if (next == -1 || next == '\r' || next == '\n' || next != separator.charAt(i)) {
+                br.reset();
+                return false;
             }
         }
+        return true;
     }
 
     /**
